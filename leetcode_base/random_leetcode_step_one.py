@@ -1,3 +1,6 @@
+from typing import List
+
+
 class RandomLeetcodeStepOne():
 
     def init(self):
@@ -19,6 +22,11 @@ class RandomLeetcodeStepOne():
             else:
                 return min(dp(i, j - 1), dp(i - 1, j), dp(i - 1, j - 1)) + 1
         return dp(len(word1) - 1, len(word2) - 1)
+
+    def eraseOverlapIntervals(self, intervals: List[List[int]]) -> int:
+
+
+        return 1
 
 
 if __name__ == '__main__':
