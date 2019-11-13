@@ -28,8 +28,20 @@ class RandomLeetcodeStepOne():
 
         return 1
 
+    def coinChange(self, coins: List[int], amount: int) -> int:
+
+        return 0
+
+    def test(self):
+        amount =10
+        dp = [float("inf")] * (amount + 1)
+
+
+        return
+
 
 if __name__ == '__main__':
     handler = RandomLeetcodeStepOne()
     # handler.init()
     # handler.minDistance()
+    handler.test()
