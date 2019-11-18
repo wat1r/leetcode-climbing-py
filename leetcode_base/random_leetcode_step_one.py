@@ -1,6 +1,13 @@
 from typing import List
 
 
+class TreeNode():
+    def __init__(self, x):
+        self.val = x
+        self.left = None
+        self.right = None
+
+
 class RandomLeetcodeStepOne():
 
     def init(self):
@@ -35,12 +42,50 @@ class RandomLeetcodeStepOne():
             for c in coins:
                 if i - c >= 0:
                     cost = min(cost, dp[i - c] + 1)
-            dp[i] =cost
-        if dp[amount] ==float('inf'):
+            dp[i] = cost
+        if dp[amount] == float('inf'):
             return -1
         else:
             return dp[amount]
 
+    def isSymmetric(self, root: TreeNode) -> bool:
+        if root is None:
+            return True
+        else:
+            return self.check(root.left, root.right)
+
+    def check(self, left, right):
+        if left is None or right is None: return left == right
+        if left.val != right.val: return False
+        return self.check(left.right, right.left) and self.check(left.left, right.right)
+
+    # recursive
+    def preorderTraversal(self, root: TreeNode) -> List[int]:
+        l = []
+        self.visit_node(root, l)
+        return l
+
+    def visit_node(self, root, l):
+        if root is None:
+            return
+        l.append(root.val)
+        self.visit_node(root.left, l)
+        self.visit_node(root.right, l)
+
+    def preorderTraversal(self, root: TreeNode) -> List[int]:
+        stack = []
+        stack.append(root)
+        res = []
+        while stack:
+            cur = stack.pop()
+            if cur is None:
+                continue
+            res.append(cur.val)
+            if cur.right:
+                stack.append(cur.right)
+            if cur.left:
+                stack.append(cur.left)
+        return res
 
     def test(self):
         amount = 10
