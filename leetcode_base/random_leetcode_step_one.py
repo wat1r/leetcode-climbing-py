@@ -87,6 +87,45 @@ class RandomLeetcodeStepOne():
                 stack.append(cur.left)
         return res
 
+    def inorderTraversal(self, root: TreeNode) -> List[int]:
+        stack = []
+        res = []
+        cur = root
+        while cur or stack:
+            while cur:
+                stack.append(cur)
+                cur = cur.left
+            node = stack.pop()
+            res.append(node.val)
+            cur = node.right
+        return res
+
+    def inorderTraversal(self, root: TreeNode) -> List[int]:
+        res = []
+        self.inorder_visit_node(root, res)
+        return res
+
+    def inorder_visit_node(self, root, res):
+        if root is None:
+            return
+        self.inorder_visit_node(root.left, res)
+        res.append(root.val)
+        self.inorder_visit_node(root.right, res)
+
+    def postorderTraversal(self, root: TreeNode) -> List[int]:
+        stack = []
+        res = []
+        stack.append(root)
+        while stack:
+            cur = stack.pop()
+            if cur is None:
+                continue
+            stack.append(cur.left)
+            stack.append(cur.right)
+            res.append(cur.val)
+        res.reverse()
+        return res
+
     def test(self):
         amount = 10
         dp = [float("inf")] * (amount + 1)
