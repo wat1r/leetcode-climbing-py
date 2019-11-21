@@ -1,3 +1,5 @@
+import queue
+from collections import deque
 from typing import List
 
 
@@ -126,12 +128,66 @@ class RandomLeetcodeStepOne():
         res.reverse()
         return res
 
+    # def invertTree(self, root: TreeNode) -> TreeNode:
+    #     if root is None: return
+    #     left = self.invertTree(root.left)
+    #     right = self.invertTree(root.right)
+    #     root.left = right
+    #     root.right = left
+    #     return root
+
+    def invertTree(self, root: TreeNode) -> TreeNode:
+        from collections import deque
+        if root is None: return
+        queue = deque()
+        queue.appendleft(root)
+        while queue:
+            cur = queue.pop()
+            tmp = cur.left
+            cur.left = cur.right
+            cur.right = tmp
+            if cur.left: queue.appendleft(cur.left)
+            if cur.right: queue.appendleft(cur.right)
+        return root
+
+    def HasSubtree(self, pRoot1, pRoot2):
+        res = False
+        if pRoot1 is not None and pRoot2 is not None:
+            if pRoot1.val == pRoot2.val: res = self.HasSubtreeSegment(pRoot1, pRoot2)
+            if res is False: res = self.HasSubtreeSegment(pRoot1.left, pRoot2)
+            if res is False: res = self.HasSubtreeSegment(pRoot1.right, pRoot2)
+        return res
+
+    def HasSubtreeSegment(self, pRoot1, pRoot2) -> bool:
+        if pRoot2 is None: return True
+        if pRoot1 is None: return False
+        if pRoot1.val != pRoot2.val: return False
+        return self.HasSubtreeSegment(pRoot1.left, pRoot2) and self.HasSubtreeSegment(pRoot1.right, pRoot2)
+
+    def firstMissingPositive(self, nums: List[int]) -> int:
+        s = set()
+        n = len(nums)
+        for i in range(0, n):
+            if nums[i] >= 1 and nums[i] <= n + 1:
+                s.add(nums[i])
+
+        for i in range(1, n + 1):
+            if i not in s:
+                return i
+        return n + 1
+
     def test(self):
-        amount = 10
-        dp = [float("inf")] * (amount + 1)
-        m = 3
-        n = 4
-        dp = [[0 for _ in range(n + 1)] for _ in range(m + 1)]
+        # amount = 10
+        # dp = [float("inf")] * (amount + 1)
+        # m = 3
+        # n = 4
+        # dp = [[0 for _ in range(n + 1)] for _ in range(m + 1)]
+        self.stack = []
+        self.stack.append(1)
+        self.stack.append(2)
+        self.stack.append(3)
+        self.stack.append(4)
+        self.stack.append(5)
 
         return
 
@@ -141,4 +197,22 @@ if __name__ == '__main__':
     # handler.init()
     # handler.minDistance()
     handler.test()
-    handler.coinChange([1, 2, 5], 11)
+    # handler.coinChange([1, 2, 5], 11)
+    # node4 = TreeNode(4)
+    # node2 = TreeNode(2)
+    # node7 = TreeNode(7)
+    # node4.left = node2
+    # node4.right = node7
+    # node1 = TreeNode(1)
+    # node3 = TreeNode(3)
+    # node6 = TreeNode(6)
+    # node9 = TreeNode(9)
+    #
+    # node2.left = node1
+    # node2.right = node3
+    #
+    # node7.left = node6
+    # node7.right = node9
+    #
+    # handler.invertTree(node4)
+    handler.firstMissingPositive([1, 2, 0])
