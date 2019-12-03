@@ -326,6 +326,73 @@ class RandomLeetcodeStepOne():
 
         return
 
+    def threeSum(self, nums: List[int]) -> List[List[int]]:
+        res = []
+        n = len(nums)
+        nums.sort()
+        for i in range(n):
+            left, right = 0, n - 1
+            while left < i and right > i and left < right:
+                target = nums[i] + nums[left] + nums[right]
+                if target > 0:
+                    right -= 1
+                elif target < 0:
+                    left += 1
+                else:
+                    tmp = [nums[i], nums[left], nums[right]]
+                    if tmp not in res:
+                        res.append(tmp)
+                    left += 1
+                    right -= 1
+        return res
+
+    def threeSum(self, nums: List[int]) -> List[List[int]]:
+        res = []
+        n = len(nums)
+        nums.sort()
+        for i in range(n):
+            if i > 0 and nums[i] == nums[i - 1]: continue
+            left, right = i + 1, n - 1
+            while left < right:
+                target = nums[i] + nums[left] + nums[right]
+                if target > 0:
+                    right -= 1
+                elif target < 0:
+                    left += 1
+                else:
+                    res.append([nums[i], nums[left], nums[right]])
+                    while left < right and nums[left] == nums[left + 1]:
+                        left += 1
+                    while right > left and nums[right] == nums[right - 1]:
+                        right -= 1
+                    left += 1
+                    right -= 1
+        return res
+
+    def isValid(self, s: str) -> bool:
+        mapping = {')': '(', ']': '[', '}': '{'}
+        stack = []
+        for chas in s:
+            if chas in mapping:
+                pop = stack.pop() if stack else '#'
+                if pop != mapping[chas]: return False
+            else:
+                stack.append(chas)
+        return not stack
+
+    def merge(self, intervals: List[List[int]]) -> List[List[int]]:
+        intervals.sort(key=lambda x: x[0])
+        res = []
+        for interval in intervals:
+            if not res or res[-1][1] < interval[0]:
+                res.append(interval)
+            else:
+                res[-1][1] = max(res[-1][1], interval[1])
+        return res
+
+    def insert(self, intervals: List[List[int]], newInterval: List[int]) -> List[List[int]]:
+
+        return None
 
 if __name__ == '__main__':
     handler = RandomLeetcodeStepOne()
@@ -353,4 +420,6 @@ if __name__ == '__main__':
     # handler.firstMissingPositive([1, 2, 0])
     # handler.firstMissingPositive([3, 4, -1, 1])
     # handler.firstMissingPositive([2])
-    handler.firstMissingPositive([])
+    # handler.firstMissingPositive([])
+    handler.merge([[1, 3], [2, 6], [8, 10], [15, 18]])
+    # handler.merge([[1,4],[2,3]])
