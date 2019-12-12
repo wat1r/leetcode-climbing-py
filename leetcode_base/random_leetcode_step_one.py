@@ -394,6 +394,57 @@ class RandomLeetcodeStepOne():
 
         return None
 
+    def climbStairs(self, n: int) -> int:
+        if n <= 2: return n
+        pre1, pre2 = 1, 2
+        for i in range(2, n):
+            cur = pre1 + pre2
+            pre1 = pre2
+            pre2 = cur
+        return cur
+
+    def setZeroes(self, matrix: List[List[int]]) -> None:
+        """
+        Do not return anything, modify matrix in-place instead.
+        """
+        m, n = len(matrix), len(matrix[0])
+        row, col = set(), set()
+        for i in range(m):
+            for j in range(n):
+                if matrix[i][j] == 0:
+                    row.add(i)
+                    col.add(j)
+        for i in range(m):
+            for j in range(n):
+                if i in row or j in col:
+                    matrix[i][j] = 0
+
+    def isPalindrome(self, s: str) -> bool:
+        l, r = 0, len(s) - 1
+        while (l < r):
+            while (not s[l].isalpha() and not s[l].isdigit()) and l < r:
+                l += 1
+            while (not s[r].isalpha() and not s[r].isdigit()) and l < r:
+                r -= 1
+            if s[l].lower() != s[r].lower():
+                return False
+            else:
+                l += 1
+                r -= 1
+        return True
+
+    def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
+
+
+
+
+
+
+
+
+        return None
+
+
 if __name__ == '__main__':
     handler = RandomLeetcodeStepOne()
     # handler.init()
@@ -421,5 +472,7 @@ if __name__ == '__main__':
     # handler.firstMissingPositive([3, 4, -1, 1])
     # handler.firstMissingPositive([2])
     # handler.firstMissingPositive([])
-    handler.merge([[1, 3], [2, 6], [8, 10], [15, 18]])
+    # handler.merge([[1, 3], [2, 6], [8, 10], [15, 18]])
     # handler.merge([[1,4],[2,3]])
+    # handler.isPalindrome("race a car")
+    handler.isPalindrome("A man, a plan, a canal: Panama")
