@@ -435,14 +435,19 @@ class RandomLeetcodeStepOne():
 
     def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
 
-
-
-
-
-
-
-
         return None
+
+    def intToRoman(self, num: int) -> str:
+        arabic_nums = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+        romans = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"]
+        i = 0
+        res = ""
+        while i < len(arabic_nums):
+            while num >= arabic_nums[i]:
+                num -= arabic_nums[i]
+                res += romans[i]
+            i += 1
+        return res
 
 
 if __name__ == '__main__':
@@ -475,4 +480,5 @@ if __name__ == '__main__':
     # handler.merge([[1, 3], [2, 6], [8, 10], [15, 18]])
     # handler.merge([[1,4],[2,3]])
     # handler.isPalindrome("race a car")
-    handler.isPalindrome("A man, a plan, a canal: Panama")
+    # handler.isPalindrome("A man, a plan, a canal: Panama")
+    handler.intToRoman(1994)
