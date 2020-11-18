@@ -8,6 +8,10 @@ import pymongo
 from urllib.parse import quote
 import time
 import sys
+import requests
+import re
+
+from bs4 import BeautifulSoup
 
 import random
 
@@ -48,7 +52,10 @@ def page_get(page):
         # url = "https://s.taobao.com/search?q=" + quote(key_word)
         url = "https://item.taobao.com/item.htm?spm=a230r.1.14.2.61539c14EEPlui&id=613889135290&ns=1&abbucket=13#detail"
         browser.get(url)  # 连接淘宝网
+        # r_res = requests.get(url)
         comment_tab = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '#J_TabBar > li.selected > a')))
+        # soup = BeautifulSoup(r_res.text, 'lxml')
+
         comment_tab.click()  #
         # time.sleep(5)  #
         # sort_sales = wait.until(
@@ -63,16 +70,30 @@ def page_get(page):
 # 获取信息
 def item_info():
     html = browser.page_source  # 获取html
-    doc = pq(html)
     print("获取成功")
-    lis = 'doc.find('#reviews > div > div > div > div > div > div.tb-revbd > ul > li')
+    # doc = pq(html)
+    items = BeautifulSoup(html, 'lxml').select('#reviews > div > div > div > div > div > div.tb-revbd > ul > li')
+    for i in range(len(items)):
+        item = items[i]
+        items_info = {
+            "user_name": item.select('div.from-whom > div')[0].text,
+            "comment": item.select('div.review-details > div > div')[0].text,
+            "extra_info": item.select('div.review-details > div > div')[1].text,
+            "time_good": item.select('div.review-details > div > div')[2].text,
+        }
+        print(items_info)
+
+        # items[0].select('div.from-whom > div')[0].text
+        # items[0].select('div.review-details > div > div')[2].text
+
+    # lis = 'doc.find('  # reviews > div > div > div > div > div > div.tb-revbd > ul > li')
     # print('这一页商品的的个数是', len(doc('#mainsrp-itemlist .item')), '件')
-    for i in range(lis.size()):
-        curr_li = lis[i]
+    # for i in range(lis.size()):
+    #     curr_li = lis[i]
+    #
+    #     print()
 
-        print()
-
-        # result_save(None)  # 存储
+    result_save(items_info)  # 存储
 
 
 def result_save(data):
