@@ -6,6 +6,10 @@ import json
 from baiduspider import BaiduSpider
 from pprint import pprint
 
+"""
+https://mp.weixin.qq.com/s/z0DM5iaWjQ5aax10mNe7FA
+"""
+
 # 实例化BaiduSpider
 spider = BaiduSpider()
 
