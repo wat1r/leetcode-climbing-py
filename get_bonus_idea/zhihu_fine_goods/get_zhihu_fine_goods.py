@@ -29,7 +29,7 @@ clickrate = {
 
 file = open('./data/refrigerator_search_result' + '.txt', mode='a')
 
-# 定义头文件，伪装成浏览器
+#  headers info
 headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Encoding': 'gzip, deflate, compress',
@@ -40,10 +40,11 @@ headers = {
 }
 
 
-# 获取百度链接的真实源地址
-# href = {str} 'https://www.baidu.com/link?url=gCQcWkErExKXSzK_LW_hVotcyJfh3qvF282lT00V3-plCGVMuVdqcaM5PBHm_1udhw2Kk6MVXdV-oDq3EZPvrK&amp;wd=&amp;eqid=af674e0d0000476c000000045fb51ddc'
-# real_url = {str} 'https://www.zhihu.com/question/21122897'
 def get_real_source_url():
+    """
+    transform the baidu site  url to original site url
+    :return:
+    """
     href = "http://www.baidu.com/link?url=tuzYguiCIT10b-dd1eg86SpvyYlxpxvcZShgNdVXRfx77xDQCbbW2fVdKyAIejGq5xm2u2C93Z6cEmK94yaKaa"
     baidu_url = requests.get(url=href, headers=headers, allow_redirects=False)
     real_url = baidu_url.headers['Location']  # 得到网页原始地址
@@ -71,6 +72,10 @@ def test_json():
 
 
 def build_json_body():
+    """
+    build the json result
+    :return:
+    """
     result_json = {
         'url': '',
         'score': '',
@@ -79,6 +84,11 @@ def build_json_body():
 
 
 def result_save(data):
+    """
+    save the result
+    :param data:
+    :return:
+    """
     if True:
         print(data)
         file.write(str(data) + "\n")
@@ -87,6 +97,11 @@ def result_save(data):
 
 
 def baidu_search(keyword):
+    """
+    remove some redundant item such as ads and statistics
+    :param keyword:
+    :return:
+    """
     data = spider.search_web(query=keyword)
     for data_item in data['results']:
         # str(data_item['origin']).__contains__("知乎")
@@ -106,4 +121,4 @@ if __name__ == '__main__':
     # read_excel_file()
     # test_json()
     # 搜索网页
-    baidu_search("冰箱品牌哪个好")
+    # baidu_search("冰箱品牌哪个好")
