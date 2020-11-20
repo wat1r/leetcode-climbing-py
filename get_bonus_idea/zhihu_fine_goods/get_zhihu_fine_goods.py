@@ -2,6 +2,12 @@
 import requests
 import xlrd
 import json
+# 导入BaiduSpider
+from baiduspider import BaiduSpider
+from pprint import pprint
+
+# 实例化BaiduSpider
+spider = BaiduSpider()
 
 # 点击率分布数据
 clickrate = {
@@ -34,11 +40,10 @@ headers = {
 # href = {str} 'https://www.baidu.com/link?url=gCQcWkErExKXSzK_LW_hVotcyJfh3qvF282lT00V3-plCGVMuVdqcaM5PBHm_1udhw2Kk6MVXdV-oDq3EZPvrK&amp;wd=&amp;eqid=af674e0d0000476c000000045fb51ddc'
 # real_url = {str} 'https://www.zhihu.com/question/21122897'
 def get_real_source_url():
-    href = "https://www.baidu.com/link?url=gCQcWkErExKXSzK_LW_hVotcyJfh3qvF282lT00V3-plCGVMuVdqcaM5PBHm_1udhw2Kk6MVXdV-oDq3EZPvrK&amp;wd=&amp;eqid=af674e0d0000476c000000045fb51ddc"
+    href = "http://www.baidu.com/link?url=tuzYguiCIT10b-dd1eg86SpvyYlxpxvcZShgNdVXRfx77xDQCbbW2fVdKyAIejGq5xm2u2C93Z6cEmK94yaKaa"
     baidu_url = requests.get(url=href, headers=headers, allow_redirects=False)
     real_url = baidu_url.headers['Location']  # 得到网页原始地址
-    if real_url.startswith('http'):
-        print("dd")
+    print(real_url)
 
 
 def read_excel_file():
@@ -77,10 +82,24 @@ def result_save(data):
         print("保存失败")
 
 
+def baidu_search(keyword):
+    data = spider.search_web(query=keyword)
+    for data_item in data['results']:
+        # str(data_item['origin']).__contains__("知乎")
+        # data_item['url']
+        # data_item['title']
+        # data_item['time']
+        # total_index:
+        # curr_index
+        pprint(data_item)
+
+
 print("end")
 
 if __name__ == '__main__':
     print("start")
     # get_real_source_url()
     # read_excel_file()
-    test_json()
+    # test_json()
+    # 搜索网页
+    baidu_search("冰箱品牌哪个好")
