@@ -56,8 +56,7 @@ def read_excel_file():
     read excel file :get row value
     :return:
     """
-    wb = xlrd.open_workbook(
-        "D:\\Dev\\SrcCode\\leetcode-climbing-py\\get_bonus_idea\\zhihu_fine_goods\\data\\refrigerator_keywords_4_search_src.xls")
+    wb = xlrd.open_workbook("./data/refrigerator_keywords_4_search_src.xls")
     sheet = wb.sheet_by_index(0)
     for i in range(1, sheet.nrows):
         curr_row = sheet.row_values(i)  # 0-6的字段名   curr_row[1]
@@ -121,4 +120,4 @@ if __name__ == '__main__':
     # read_excel_file()
     # test_json()
     # 搜索网页
-    # baidu_search("冰箱品牌哪个好")
+    baidu_search("双开门冰箱推荐")
