@@ -23,9 +23,18 @@ class StringTest(object):
         print(rest)
         return rest
 
+    def test_one(self):
+        # 自增mount对应的值，当mount不存在时，则创建mount＝amount，否则，则自增,amount为自增数(整数)
+        print(self.r.incr("mount", amount=2))  # 输出:2
+        print(self.r.incr("mount"))  # 输出:3
+        print(self.r.incr("mount", amount=3))  # 输出:6
+        print(self.r.incr("mount", amount=6))  # 输出:12
+        print(self.r.get("mount"))  # 输出:12
+
 
 if __name__ == '__main__':
     handler = StringTest()
-    handler.test_set()
-    handler.test_get()
+    # handler.test_set()
+    # handler.test_get()
+    handler.test_one()
     print("hello redis")
