@@ -32,3 +32,4 @@ if __name__ == '__main__':
     nums = [-1, 0, 1, 2, -1, -4]
     handler = Solution()
     handler.threeSum(nums)
+    print("end")
