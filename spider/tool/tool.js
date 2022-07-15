@@ -19,3 +19,25 @@
 }();
 
 
+
+//抖音东方甄选直播间实时数据推送
+//https://live.douyin.com/80017709309
+
+window.dataWs = s.toObject();
+!function () {
+    // 防止重复创建websocket
+    var res = window.dataWs;
+    if (window.flagLX) {
+        window.wsDouying.send(JSON.stringify(res));
+    } else {
+
+        var ws = new WebSocket("ws://127.0.0.1:9876");
+        window.flagLX = true;
+        window.wsDouying = ws;
+        ws.onopen = function (evt) {
+        };
+        ws.onmessage = function (evt) {
+            ws.send(JSON.stringify(res));
+        }
+    }
+}();

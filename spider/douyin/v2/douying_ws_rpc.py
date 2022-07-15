@@ -22,7 +22,7 @@ async def main_login(websocket, path):
     await recv_msg(websocket)
 
 
-start_server = websockets.serve(main_login, "127.0.0.1", 8880)
+start_server = websockets.serve(main_login, "127.0.0.1", 9876)
 
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
