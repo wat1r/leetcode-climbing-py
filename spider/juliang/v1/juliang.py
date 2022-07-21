@@ -1,29 +1,29 @@
+import base64
 import json
-
-from selenium import webdriver
-from lxpy import copy_headers_dict
 import requests
+from Cryptodome.Cipher import AES
+from selenium import webdriver
 
-headers = copy_headers_dict('''
-    accept: application/json, text/plain, */*
-    accept-encoding: gzip, deflate, br
-    accept-language: zh-CN,zh;q=0.9
-    cache-control: no-cache
-    content-length: 89
-    content-type: application/json;charset=UTF-8
-    cookie: i18next=zh; MONITOR_WEB_ID=75a85826-c1b9-49f2-b7f8-7a1a383b4dd6; x-jupiter-uuid=16327104466868524; Hm_lvt_c36ebf0e0753eda09586ef4fb80ea125=1632709872,1632710446; Hm_lpvt_c36ebf0e0753eda09586ef4fb80ea125=1632710446; tt_scid=4hsZnfHNAtmWGSi4MWUNz-N1DPpijAYZKyzkeKneA2n.ECIhOKPqYLGHBiH8H5zm15f6; s_v_web_id=verify_ku21n812_2kf7njXo_yptW_4Q86_BXNX_Y67hNBvJscUD; _csrf_token=R1pNiIx5y40wvC5reN0CybZa
-    origin: https://trendinsight.oceanengine.com
-    pragma: no-cache
-    referer: https://trendinsight.oceanengine.com/arithmetic-index/analysis?keyword=lx
-    sec-ch-ua: "Google Chrome";v="93", " Not;A Brand";v="99", "Chromium";v="93"
-    sec-ch-ua-mobile: ?0
-    sec-ch-ua-platform: "Windows"
-    sec-fetch-dest: empty
-    sec-fetch-mode: cors
-    sec-fetch-site: same-origin
-    tea-uid: 6945252828761294374
-    user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36
-    ''')
+headers = {
+    "accept": "application/json, text/plain, */*",
+    "accept-encoding": "gzip, deflate, br",
+    "accept-language": "zh-CN,zh;q=0.9",
+    "cache-control": "no-cache",
+    "content-length": "89",
+    "content-type": "application/json;charset=UTF-8",
+    "cookie": "i18next=zh; MONITOR_WEB_ID=75a85826-c1b9-49f2-b7f8-7a1a383b4dd6; x-jupiter-uuid=16327104466868524; Hm_lvt_c36ebf0e0753eda09586ef4fb80ea125=1632709872,1632710446; Hm_lpvt_c36ebf0e0753eda09586ef4fb80ea125=1632710446; tt_scid=4hsZnfHNAtmWGSi4MWUNz-N1DPpijAYZKyzkeKneA2n.ECIhOKPqYLGHBiH8H5zm15f6; s_v_web_id=verify_ku21n812_2kf7njXo_yptW_4Q86_BXNX_Y67hNBvJscUD; _csrf_token=R1pNiIx5y40wvC5reN0CybZa",
+    "origin": "https://trendinsight.oceanengine.com",
+    "pragma": "no-cache",
+    "referer": "https://trendinsight.oceanengine.com/arithmetic-index/analysis?keyword=lx",
+    "sec-ch-ua": "\"Google Chrome\";v=\"93\", \" Not;A Brand\";v=\"99\", \"Chromium\";v=\"93\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "tea-uid": "6945252828761294374",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Safari/537.36"
+}
 
 
 class Browser():
@@ -71,6 +71,10 @@ class Browser():
         self.browser = webdriver.Chrome(executable_path=self.executablePath, chrome_options=options)
         self.browser.get('https://trendinsight.oceanengine.com/arithmetic-index')
 
+    """
+    获取接口签名的方法
+    """
+
     def signature(self, keyword, start_date, end_date):
         sign_url = self.browser.execute_script('''
                     function queryData(url) {
@@ -93,59 +97,13 @@ class Browser():
                             });
                             return p;
                         }
-                    var p1 = queryData('lx');
+                    var p1 = queryData('fc');
                     res = Promise.all([p1]).then(function(result){
                     return result
                     })
                     return res;
         ''' % (keyword, start_date, end_date))
-        '''
-        let e={"url":"https://trendinsight.oceanengine.com/api/open/index/get_multi_keyword_hot_trend",
-                                "method":"POST",
-                                "data" : '{"keyword_list":["lx"],"start_date":"20220430","end_date":"20220530","app_name":"aweme"}'};
-        var h = new XMLHttpRequest;h.open(e.method, e.url, true);
-        h.setRequestHeader("accept","application/json, text/plain, */*");
-        h.setRequestHeader("content-type","application/json;charset=UTF-8");
-        h.setRequestHeader("tea-uid","7054893410171930123");
-                h.onreadystatechange=function(){
-                    if (h.status===200){
-                       console.log(h.responseText)
-                       console.log(h.responseURL)
-                    }
-                }
-        h.send(e.data);
-        '''
         return sign_url[0]
-
-    def responseText(self, keyword, start_date, end_date):
-        doc = self.browser.execute_script('''
-                    function queryData(url) {
-                       var p = new Promise(function(resolve,reject) {
-                           var e={"url":"https://trendinsight.oceanengine.com/api/open/index/get_multi_keyword_hot_trend",
-                                    "method":"POST",
-                                    "data" : '{"keyword_list": ["%s"],"start_date": "%s","end_date": "%s","app_name": "aweme"}'};
-                            var h = new XMLHttpRequest;h.open(e.method, e.url, true);
-                            h.setRequestHeader("accept","application/json, text/plain, */*");  
-                            h.setRequestHeader("content-type","application/json;charset=UTF-8");
-                            h.setRequestHeader("tea-uid","7054893410171930123");
-                            h.onreadystatechange =function() {
-                                 if(h.readyState != 4) return;
-                                 if(h.readyState === 4 && h.status  ===200) {
-                                    resolve(h.responseText);
-                                 } else {
-                                  }
-                            };
-                            h.send(e.data);
-                            });
-                            return p;
-                        }
-                    var p1 = queryData('lx');
-                    res = Promise.all([p1]).then(function(result){
-                    return result
-                    })
-                    return res;
-        ''' % (keyword, start_date, end_date))
-        return doc[0]
 
     def close(self):
         self.browser.close()
@@ -157,41 +115,29 @@ def get_data(keyword, start_date, end_date):
         keyword, start_date, end_date)
     sign_url = browser.signature(keyword=keyword, start_date=start_date, end_date=end_date)
     print("sign_url:", sign_url)
-    doc = requests.post(sign_url, headers=headers, data=data.encode()).json()['data']
+    resp = requests.post(sign_url, headers=headers, data=data.encode())
+    doc = resp.json()['data']
     return doc
 
 
-import base64
-from Cryptodome.Cipher import AES
-
-
 # AES-128
-def decrtptlx(String):
+def decrypt(_str):
     iv = "amlheW91LHFpYW53".encode(encoding='utf-8')
     key = 'anN2bXA2NjYsamlh'.encode(encoding='utf-8')
     cryptor = AES.new(key=key, mode=AES.MODE_CFB, IV=iv, segment_size=128)
-    decode = base64.b64decode(String)
+    decode = base64.b64decode(_str)
     plain_text = cryptor.decrypt(decode)
-    # print(plain_text)
-    json_object = json.loads(plain_text)
-    json_formatted_str = json.dumps(json_object, indent=2)
-    print(json_formatted_str)
-    return plain_text
+    # json_object = json.loads(plain_text)
+    # json_formatted_str = json.dumps(json_object, indent=2)
+    # print(json_formatted_str)
+    _plain_text = str(plain_text, encoding='utf-8')
+    print(_plain_text)
+    return _plain_text
 
 
 browser = Browser()
 
 # test 提取 responseURL
-decrtptlx(get_data(keyword='lx', start_date="20210826", end_date="20210926"))
-
-decrtptlx(get_data(keyword='鞠婧祎', start_date="20210826", end_date="20210926"))
-
-# 直接提取responseText
-keyword = '鞠婧祎'
-start_date = "20210826"
-end_date = "20210926"
-text = browser.responseText(keyword=keyword, start_date=start_date, end_date=end_date)
-text = json.loads(text)
-decrtptlx(text['data'])
+decrypt(get_data(keyword='女装', start_date="20220618", end_date="20220718"))
 
 browser.close()
