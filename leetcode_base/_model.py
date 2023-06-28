@@ -1,5 +1,6 @@
 from typing import List
 
+
 class _1st:
     print("")
 
@@ -14,3 +15,7 @@ class _3rd:
 
 class _4th:
     print("")
+
+
+if __name__ == '__main__':
+    handler = _1st()
