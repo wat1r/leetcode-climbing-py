@@ -18,4 +18,6 @@ class _4th:
 
 
 if __name__ == '__main__':
-    handler = _1st()
+    handlers = [_1st()]
+    for handler in handlers:
+        print("")
