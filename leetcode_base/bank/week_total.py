@@ -180,8 +180,79 @@ class _4th_5:
         return f[0] if f[0] < inf else -1
 
 
+class _4th_6:
+    def sumDistance(self, nums: List[int], s: str, d: int) -> int:
+        MOD = 10 ** 9 + 7
+        for i, c in enumerate(s):
+            nums[i] += d if c == 'R' else -d
+        nums.sort()
+        ans = s = 0
+        for i, x in enumerate(nums):
+            ans += i * x - s
+            s += x
+        return ans % MOD
+
+
+class _4th_7:
+    def minExtraChar(self, s: str, dictionary: List[str]) -> int:
+        n = len(s)
+
+        # 表示以s[i]结尾的字符串，有多少个额外字符
+        # @cache
+        def dfs(i: int) -> int:
+            if i < 0:
+                return 0
+            res = dfs(i - 1) + 1  # 不选s[i]，多出1个额外的字符
+            for j in range(i + 1):
+                if s[j:i + 1] in dictionary:  # 选s[i]
+                    res = min(res, dfs(j - 1))
+            return res
+
+        return dfs(n - 1)
+
+
+class _4th_8:
+    def minExtraChar(self, s: str, dictionary: List[str]) -> int:
+        n = len(s)
+        # 表示以s[i]结尾的字符串，有多少个额外字符
+        f = [0] * (n + 1)
+        for i in range(n):
+            f[i + 1] = f[i] + 1
+            for j in range(i + 1):
+                if s[j:i + 1] in dictionary:
+                    f[i + 1] = min(f[i + 1], f[j])
+        return f[n]
+
+
+class _4th_9:
+    def maxStrength(self, nums: List[int]) -> int:
+        ans = -inf
+
+        def dfs(i: int, prod: int, is_empty: bool):
+            if i == len(nums):
+                if not is_empty:
+                    nonlocal ans
+                    ans = max(ans, prod)
+                return
+            dfs(i + 1, prod, is_empty)
+            dfs(i + 1, prod * nums[i], False)
+
+        dfs(0, 1, True)
+        return ans
+
+
+class _4th_9:
+    def maxStrength(self, nums: List[int]) -> int:
+        mmax = mmin = nums[0]
+        for x in nums[1:]:
+            t = mmax
+            mmax = max(mmax, x, mmax * x, mmin * x)
+            mmin = min( mmin, x, t * x, mmin * x)
+        return mmax
+
+
 if __name__ == '__main__':
-    handlers = [_4th_5()]
+    handlers = [_4th_7()]
     for handler in handlers:
         # nums1 = [2, 3, 1]
         # nums2 = [1, 2, 1]
@@ -189,5 +260,12 @@ if __name__ == '__main__':
         # nums = [2, 3, 4, 3, 4]
         # handler.alternatingSubarray(nums)
         # handler.bin_gen()
-        handler.minimumBeautifulSubstrings("1011")
+        # handler.minimumBeautifulSubstrings("1011")
+        # nums = [-2, 0, 2]
+        # s = "RLL"
+        # d = 3
+        # handler.sumDistance(nums, s, d)
+        s = "leetscode"
+        dictionary = ["leet", "code", "leetcode"]
+        handler.minExtraChar(s, dictionary)
         print()
