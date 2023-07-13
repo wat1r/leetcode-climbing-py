@@ -118,13 +118,44 @@ class _4th_2:
         print("")
 
 
+class _4th_4:
+    def matrixSum(self, nums: List[List[int]]) -> int:
+        m, n = len(nums), len(nums[0])
+        res = 0
+        for i in range(m):
+            nums[i].sort()
+            # sorted(nums, key=lambda x: nums[i])
+        for j in range(n):
+            mmax = 0
+            for i in range(m):
+                mmax = max(mmax, nums[i][j])
+            res += mmax
+        return res
+
+
+class _4th_5:
+    def maximumOr(self, nums: List[int], k: int) -> int:
+        n = len(nums)
+        suf = [0] * (n + 1)
+        for i in range(n - 1, 0, -1):
+            suf[i] = suf[i + 1] | nums[i]
+        res = pre = 0
+        for i, x in enumerate(nums):
+            res = max(res, pre | x << k | suf[i + 1])
+            pre |= x
+        return res
+
+
 if __name__ == '__main__':
-    handlers = [_4th_1()]
+    handlers = [_4th_5()]
     for handler in handlers:
         # handler.largestComponentSize([4, 6, 15, 35])
         # handler.largestComponentSize()
         # handler.areConnected(6, 2, [[1, 4], [2, 5], [3, 6]])
         # handler.areConnected(6, 0, [[4, 5], [3, 4], [3, 2], [2, 6], [1, 3]])
         # handler.areConnected(5, 1, [[4, 5], [4, 5], [3, 2], [2, 3], [3, 4]])
-        handler.gcdOfStrings("ABCABC", "ABC")
+        # handler.gcdOfStrings("ABCABC", "ABC")
+        # handler.matrixSum([[2, 7, 1], [6, 4, 2], [6, 5, 3], [3, 2, 1]])
+        # handler.maximumOr([12, 9], 1)
+        handler.maximumOr([8, 1, 2], 2)
         print("")
