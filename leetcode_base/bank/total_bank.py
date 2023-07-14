@@ -146,8 +146,88 @@ class _4th_5:
         return res
 
 
+class _4th_6:
+    def sumSubarrayMins(self, arr: List[int]) -> int:
+        MOD = 10 ** 9 + 7
+        n = len(arr)
+        # 左边界left[i]为左侧严格小于arr[i]的最近元素的位置(不存在时为-1)
+        left, st = [-1] * n, []
+        for i, x in enumerate(arr):
+            while st and arr[st[-1]] >= x:
+                st.pop()  # 移除大于x的元素
+            if st:
+                left[i] = st[-1]
+            st.append(i)
+        # 右边界right[i]为右侧小于等于arr[i]的最近元素的位置(不存在时为n)
+        right, st = [n] * n, []
+        for i in range(n - 1, -1, -1):
+            while st and arr[st[-1]] > arr[i]:
+                st.pop()
+            if st:
+                right[i] = st[-1]
+            st.append(i)
+        ans = 0
+        for i, (x, l, r) in enumerate(zip(arr, left, right)):
+            ans += x * (i - l) * (r - i)
+        return ans % MOD
+
+
+class _4th_7:
+    def sumSubarrayMins(self, arr: List[int]) -> int:
+        MOD = 10 ** 9 + 7
+        n = len(arr)
+        # 左边界left[i]为左侧严格小于arr[i]的最近元素的位置(不存在时为-1)
+        # 右边界right[i]为右侧小于等于arr[i]的最近元素的位置(不存在时为n)
+        left, right, st = [-1] * n, [n] * n, []
+        for i, x in enumerate(arr):
+            while st and arr[st[-1]] >= x:
+                right[st.pop()] = i  # 移除大于x的元素
+            if st:
+                left[i] = st[-1]
+            st.append(i)
+
+        ans = 0
+        for i, (x, l, r) in enumerate(zip(arr, left, right)):
+            ans += x * (i - l) * (r - i)
+        return ans % MOD
+
+
+class _4th_8:
+    def sumSubarrayMins(self, arr: List[int]) -> int:
+        MOD = 10 ** 9 + 7
+        arr.append(-1)
+        ans, st = 0, [-1]
+        for r, x in enumerate(arr):
+            while len(st) > 1 and arr[st[-1]] >= x:
+                i = st.pop()
+                ans += arr[i] * (i - st[-1]) * (r - i)
+            st.append(r)
+        return ans % MOD
+
+
+class _4th_9:
+    def maxSumMinProduct(self, nums: List[int]) -> int:
+        MOD = 10 ** 9 + 7
+        n = len(nums)
+        left, right, st = [0] * n, [n - 1] * n, []
+        for i, x in enumerate(nums):
+            while st and nums[st[-1]] >= x:
+                # right[i]是非严格的右侧最近的小于等于nums[i]的元素下标
+                right[st[-1]] = i - 1
+                st.pop()
+            if st:
+                # left[i]是左侧最近的严格小于nums[i]的元素下标
+                left[i] = st[-1] + 1
+            st.append(i)
+        pre = [0]
+        for i, x in enumerate(nums):
+            pre.append(pre[-1] + x)
+        ans = max((pre[right[i] + 1] - pre[left[i]]) * x for i, x in enumerate(nums))
+        return ans % MOD
+
+
 if __name__ == '__main__':
-    handlers = [_4th_5()]
+    handlers = [_4th_7()]
     for handler in handlers:
         # handler.largestComponentSize([4, 6, 15, 35])
         # handler.largestComponentSize()
@@ -157,5 +237,6 @@ if __name__ == '__main__':
         # handler.gcdOfStrings("ABCABC", "ABC")
         # handler.matrixSum([[2, 7, 1], [6, 4, 2], [6, 5, 3], [3, 2, 1]])
         # handler.maximumOr([12, 9], 1)
-        handler.maximumOr([8, 1, 2], 2)
+        # handler.maximumOr([8, 1, 2], 2)
+        handler.sumSubarrayMins([3, 1, 2, 4])
         print("")
