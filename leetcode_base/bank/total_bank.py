@@ -1,3 +1,4 @@
+from cmath import inf
 from collections import defaultdict
 from typing import List
 
@@ -146,6 +147,22 @@ class _4th_5:
         return res
 
 
+class _3rd_6:
+    def sumOfPower(self, nums: List[int]) -> int:
+        nums.sort()
+        MOD = 10 ** 9 + 7
+        ans = s = 0
+        for x in nums:
+            ans = (ans + x * x * (x + s)) % MOD
+            s = (2 * s + x) % MOD
+        return ans
+        # n = len(nums)
+        # max_suf, min_suf = [-inf] * (n + 1), [inf] * (n + 1)
+        # for i in range(n):
+        #     max_suf[i + 1] = max(max_suf[i], nums[i])
+        #     min_suf[i + 1] = min(min_suf[i], nums[i])
+
+
 class _4th_6:
     def sumSubarrayMins(self, arr: List[int]) -> int:
         MOD = 10 ** 9 + 7
@@ -227,7 +244,7 @@ class _4th_9:
 
 
 if __name__ == '__main__':
-    handlers = [_4th_7()]
+    handlers = [_4th_5()]
     for handler in handlers:
         # handler.largestComponentSize([4, 6, 15, 35])
         # handler.largestComponentSize()
@@ -239,4 +256,6 @@ if __name__ == '__main__':
         # handler.maximumOr([12, 9], 1)
         # handler.maximumOr([8, 1, 2], 2)
         handler.sumSubarrayMins([3, 1, 2, 4])
+        # handler.maximumOr([8, 1, 2], 2)
+        handler.sumOfPower([2, 1, 4])
         print("")
