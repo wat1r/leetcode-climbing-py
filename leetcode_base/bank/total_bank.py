@@ -1,6 +1,8 @@
 from cmath import inf
 from collections import defaultdict
-from typing import List
+from typing import List, Optional
+
+from leetcode_base.random_leetcode_step_one import TreeNode
 
 
 class _1st:
@@ -243,6 +245,80 @@ class _4th_9:
         return ans % MOD
 
 
+class _4th_10:
+    def subArrayRanges(self, nums: List[int]) -> int:
+        n = len(nums)
+        # 左侧比nums[i]小（严格,<）的最近的数的下标 minLeft
+        # 左侧比nums[i]大（非严格,>=）的最近的数的下标 maxLeft
+        minLeft, maxLeft = [0] * n, [0] * n
+        minSt, maxSt = [], []
+        for i, x in enumerate(nums):
+            while minSt and nums[minSt[-1]] > x:
+                minSt.pop()
+            minLeft[i] = minSt[-1] if minSt else -1
+            minSt.append(i)
+
+            while maxSt and nums[maxSt[-1]] <= x:
+                maxSt.pop()
+            maxLeft[i] = maxSt[-1] if maxSt else -1
+            maxSt.append(i)
+        # 右侧比nums[i]大（非严格,>=）的最近的数的下标 minRight
+        # 右侧比nums[i]小（严格,<）的最近的数的下标 maxRight
+        minRight, maxRight = [0] * n, [0] * n
+        minSt, maxSt = [], []
+        for i in range(n - 1, -1, -1):
+            x = nums[i]
+            while minSt and nums[minSt[-1]] >= x:
+                minSt.pop()
+            minRight[i] = minSt[-1] if minSt else n
+            minSt.append(i)
+
+            while maxSt and nums[maxSt[-1]] < x:
+                maxSt.pop()
+            maxRight[i] = maxSt[-1] if maxSt else n
+            maxSt.append(i)
+        sumMax, sumMin = 0, 0
+        for i, x in enumerate(nums):
+            sumMax += (maxRight[i] - i) * (i - maxLeft[i]) * x
+            sumMin += (minRight[i] - i) * (i - minLeft[i]) * x
+        return sumMax - sumMin
+
+
+class _4th_11:
+    def distributeCoins(self, root: Optional[TreeNode]) -> int:
+        res = 0
+
+        def dfs(root: Optional[TreeNode]) -> (int, int):
+            if root is None:
+                return 0, 0
+            coins_l, nodes_l = dfs(root.left)
+            coins_r, nodes_r = dfs(root.right)
+            coins = coins_l + coins_r + root.val
+            nodes = nodes_l + nodes_r + 1
+            nonlocal res
+            res += abs(coins - nodes)
+            return coins, nodes
+
+        dfs(root)
+        return res
+
+
+class _4th_12:
+    def distributeCoins(self, root: Optional[TreeNode]) -> int:
+        res = 0
+
+        def dfs(root: Optional[TreeNode]) -> int:
+            if root is None:
+                return 0
+            d = dfs(root.left) + dfs(root.right) + root.val - 1
+            nonlocal res
+            res += abs(d)
+            return d
+
+        dfs(root)
+        return res
+
+
 if __name__ == '__main__':
     handlers = [_4th_5()]
     for handler in handlers:
@@ -255,7 +331,7 @@ if __name__ == '__main__':
         # handler.matrixSum([[2, 7, 1], [6, 4, 2], [6, 5, 3], [3, 2, 1]])
         # handler.maximumOr([12, 9], 1)
         # handler.maximumOr([8, 1, 2], 2)
-        handler.sumSubarrayMins([3, 1, 2, 4])
+        # handler.sumSubarrayMins([3, 1, 2, 4])
         # handler.maximumOr([8, 1, 2], 2)
-        handler.sumOfPower([2, 1, 4])
+        # handler.sumOfPower([2, 1, 4])
         print("")
