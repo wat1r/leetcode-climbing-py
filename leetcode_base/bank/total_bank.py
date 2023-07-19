@@ -342,6 +342,30 @@ class _4th_13:
         return ans
 
 
+class _4th_14:
+    def findMinHeightTrees(self, n: int, edges: List[List[int]]) -> List[int]:
+        in_degree, g = [0] * n, defaultdict(list)
+        for u, v in edges:
+            in_degree[u] += 1
+            in_degree[v] += 1
+            g[u].append(v)
+            g[v].append(u)
+        q = []
+        for i, v in enumerate(in_degree):
+            if v <= 1:
+                q.append(i)
+        while n > 2:
+            n -= len(q)
+            vs = []
+            for u in q:
+                for v in g[u]:
+                    in_degree[v] -= 1
+                    if in_degree[v] == 1:
+                        vs.append(v)
+            q = vs
+        return q
+
+
 if __name__ == '__main__':
     handlers = [_4th_13()]
     for handler in handlers:
