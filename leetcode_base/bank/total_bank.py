@@ -319,8 +319,31 @@ class _4th_12:
         return res
 
 
+class _4th_13:
+    def robotSim(self, commands: List[int], obstacles: List[List[int]]) -> int:
+        dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]]
+        cur_x, cur_y, cur_dir, ans = 0, 0, 0, 0
+        m, n = len(commands), len(obstacles)
+        obstacles_set = {(obstacles[i][0], obstacles[i][1]) for i in range(n)}
+        for i in range(m):
+            if commands[i] == -1:
+                cur_dir = (cur_dir + 1) % 4
+            elif commands[i] == -2:
+                cur_dir = (cur_dir + 3) % 4
+            else:
+                for j in range(commands[i]):
+                    next_x, next_y = cur_x + dirs[cur_dir][0], cur_y + dirs[cur_dir][1]
+                    if (next_x, next_y) not in obstacles_set:
+                        cur_x = next_x
+                        cur_y = next_y
+                        ans = max(ans, cur_x * cur_x + cur_y * cur_y)
+                    else:
+                        break
+        return ans
+
+
 if __name__ == '__main__':
-    handlers = [_4th_5()]
+    handlers = [_4th_13()]
     for handler in handlers:
         # handler.largestComponentSize([4, 6, 15, 35])
         # handler.largestComponentSize()
@@ -334,4 +357,5 @@ if __name__ == '__main__':
         # handler.sumSubarrayMins([3, 1, 2, 4])
         # handler.maximumOr([8, 1, 2], 2)
         # handler.sumOfPower([2, 1, 4])
+        handler.robotSim([4, -1, 3], [])
         print("")
