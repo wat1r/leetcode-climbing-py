@@ -366,6 +366,41 @@ class _4th_14:
         return q
 
 
+class _4th_15:
+    def rootCount(self, edges: List[List[int]], guesses: List[List[int]], k: int) -> int:
+        g = [[] for _ in range(len(edges) + 1)]
+        for x, y, in edges:
+            g[x].append(y)
+            g[y].append(x)
+        s = {(x, y) for x, y in guesses}
+
+        cnt0 = 0
+
+        def dfs(x: int, fa: int) -> None:
+            nonlocal cnt0
+            for y in g[x]:
+                if y != fa:
+                    if (x, y) in s:
+                        cnt0 += 1
+                    dfs(y, x)
+
+        dfs(0, -1)
+
+        ans = 0
+
+        def reroot(x: int, fa: int, cnt: int) -> None:
+            nonlocal ans
+            if cnt >= k:
+                ans += 1
+            for y in g[x]:
+                if y != fa:
+                    next_cnt = cnt - ((x, y) in s) + ((y, x) in s)
+                    reroot(y, x, next_cnt)
+
+        reroot(0, -1, cnt0)
+        return ans
+
+
 if __name__ == '__main__':
     handlers = [_4th_13()]
     for handler in handlers:
