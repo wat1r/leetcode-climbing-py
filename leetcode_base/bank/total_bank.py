@@ -417,8 +417,39 @@ class _4th_16:
         return max(max_s, sum(nums) - min_s)
 
 
+class _4th_17:
+    def maximizeSum(self, nums: List[int], k: int) -> int:
+        nums.sort()
+        b, ans = nums[-1], 0
+        while k:
+            ans += b
+            b += 1
+            k -= 1
+        return ans
+
+
+class _4th_18:
+    def findThePrefixCommonArray(self, A: List[int], B: List[int]) -> List[int]:
+        set_A, set_B = [], []
+        n = len(A)
+        ans = [0] * n
+        for i in range(n):
+            a, b = A[i], B[i]
+            if i > 0:
+                ans[i] = ans[i - 1]
+            if a == b:
+                ans[i] += 1
+            if a in set_B:
+                ans[i] += 1
+            if b in set_A:
+                ans[i] += 1
+            set_A.append(a)
+            set_B.append(b)
+        return ans
+
+
 if __name__ == '__main__':
-    handlers = [_4th_13()]
+    handlers = [_4th_18()]
     for handler in handlers:
         # handler.largestComponentSize([4, 6, 15, 35])
         # handler.largestComponentSize()
@@ -432,5 +463,7 @@ if __name__ == '__main__':
         # handler.sumSubarrayMins([3, 1, 2, 4])
         # handler.maximumOr([8, 1, 2], 2)
         # handler.sumOfPower([2, 1, 4])
-        handler.robotSim([4, -1, 3], [])
+        # handler.robotSim([4, -1, 3], [])
+        # handler.maximizeSum([1, 2, 3, 4, 5], 3)
+        handler.findThePrefixCommonArray([1, 3, 2, 4], [3, 1, 2, 4])
         print("")
