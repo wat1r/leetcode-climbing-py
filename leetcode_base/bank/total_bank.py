@@ -401,6 +401,22 @@ class _4th_15:
         return ans
 
 
+class _4th_16:
+    def maxSubarraySumCircular(self, nums: List[int]) -> int:
+        max_s = -inf  # 最大子数组和，不能为空
+        max_f = 0
+        min_s = 0  # 最小子数组和，可以为空
+        min_f = 0
+        for x in nums:
+            max_f = max(max_f, 0) + x
+            max_s = max(max_s, max_f)
+            min_f = min(min_f, 0) + x
+            min_s = min(min_s, min_f)
+        if sum(nums) == min_s:
+            return max_s
+        return max(max_s, sum(nums) - min_s)
+
+
 if __name__ == '__main__':
     handlers = [_4th_13()]
     for handler in handlers:
