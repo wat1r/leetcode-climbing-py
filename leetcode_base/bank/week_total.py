@@ -247,12 +247,30 @@ class _4th_9:
         for x in nums[1:]:
             t = mmax
             mmax = max(mmax, x, mmax * x, mmin * x)
-            mmin = min( mmin, x, t * x, mmin * x)
+            mmin = min(mmin, x, t * x, mmin * x)
         return mmax
 
 
+class _4th_6_A:
+    def sumDistance(self, nums: List[int], s: str, d: int) -> int:
+        MOD = 10 ** 9 + 7
+        for i, c in enumerate(s):
+            nums[i] += d if s[i] == 'R' else -d
+        nums.sort()
+        ans = s = 0
+        for i, x in enumerate(nums):
+            ans += i * x - s
+            s += x
+            ans %= MOD
+        return ans % MOD
+
+
+
+
+
+
 if __name__ == '__main__':
-    handlers = [_4th_7()]
+    handlers = [_4th_6()]
     for handler in handlers:
         # nums1 = [2, 3, 1]
         # nums2 = [1, 2, 1]
@@ -261,11 +279,11 @@ if __name__ == '__main__':
         # handler.alternatingSubarray(nums)
         # handler.bin_gen()
         # handler.minimumBeautifulSubstrings("1011")
-        # nums = [-2, 0, 2]
-        # s = "RLL"
-        # d = 3
-        # handler.sumDistance(nums, s, d)
-        s = "leetscode"
-        dictionary = ["leet", "code", "leetcode"]
-        handler.minExtraChar(s, dictionary)
-        print()
+        nums = [-2, 0, 2]
+        s = "RLL"
+        d = 3
+        handler.sumDistance(nums, s, d)
+        # s = "leetscode"
+        # dictionary = ["leet", "code", "leetcode"]
+        # handler.minExtraChar(s, dictionary)
+        # print()
