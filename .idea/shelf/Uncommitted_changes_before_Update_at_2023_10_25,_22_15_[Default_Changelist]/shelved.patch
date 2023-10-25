@@ -1,0 +1,12 @@
+Index: .idea/shelf/Uncommitted_changes_before_Update_at_2023_7_19__21_41__Default_Changelist_.xml
+===================================================================
+diff --git a/.idea/shelf/Uncommitted_changes_before_Update_at_2023_7_19__21_41__Default_Changelist_.xml b/.idea/shelf/Uncommitted_changes_before_Update_at_2023_7_19__21_41__Default_Changelist_.xml
+deleted file mode 100644
+--- a/.idea/shelf/Uncommitted_changes_before_Update_at_2023_7_19__21_41__Default_Changelist_.xml	(revision 96d040bc3f8617ae41511bcc2f20b3e1f8e413ac)
++++ /dev/null	(revision 96d040bc3f8617ae41511bcc2f20b3e1f8e413ac)
+@@ -1,4 +0,0 @@
+-<changelist name="Uncommitted_changes_before_Update_at_2023_7_19,_21_41_[Default_Changelist]" date="1689774090572" recycled="true" deleted="true">
+-  <option name="PATH" value="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2023_7_19,_21_41_[Default_Changelist]/shelved.patch" />
+-  <option name="DESCRIPTION" value="Uncommitted changes before Update at 2023/7/19, 21:41 [Default Changelist]" />
+-</changelist>
+\ No newline at end of file
