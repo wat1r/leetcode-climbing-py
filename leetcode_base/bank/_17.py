@@ -1,6 +1,6 @@
 from typing import List
 
-M = ["", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"]
+M = "", "", "abc", "def", "ghi", "jkl", "mno", "pqrs", "tuv", "wxyz"
 
 
 class _1st:
