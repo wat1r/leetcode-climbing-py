@@ -92,8 +92,22 @@ class _1st_6:
         return [i for _, i in stu[:k]]
 
 
+class _1st_7:
+    def countPoints(self, s: str) -> int:
+        n, ans = len(s), 0
+        map = [0] * 128
+        for i in range(0, n, 2):
+            map[ord(s[i]) - ord('B')] |= 1 << (int(s[i + 1]) - int('0'))
+        for i in range(10):
+            tot = 0
+            for c in ['R', 'G', 'B']:
+                tot += (map[ord(c) - ord('B')] >> i) & 1
+            ans += 1 if tot == 3 else 0
+        return ans
+
+
 if __name__ == '__main__':
-    hs = [_1st_6()]
+    hs = [_1st_7()]
     for handler in hs:
         # s = "abcd"
         # indexes = [0, 2]
@@ -105,9 +119,11 @@ if __name__ == '__main__':
         # handler.splitNum(num)
         # strs = ["eat", "tea", "tan", "ate", "nat", "bat"]
         # handler.groupAnagrams(strs)
-        positive_feedback = ["smart", "brilliant", "studious"]
-        negative_feedback = ["not"]
-        report = ["this student is studious", "the student is smart"]
-        student_id = [1, 2]
-        k = 2
-        handler.topStudents(positive_feedback, negative_feedback, report, student_id, k)
+        # positive_feedback = ["smart", "brilliant", "studious"]
+        # negative_feedback = ["not"]
+        # report = ["this student is studious", "the student is smart"]
+        # student_id = [1, 2]
+        # k = 2
+        # handler.topStudents(positive_feedback, negative_feedback, report, student_id, k)
+        rings = "B0B6G0R6R0R6G9"
+        handler.countPoints(rings)
