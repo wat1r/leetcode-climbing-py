@@ -3,17 +3,20 @@ import pickle
 import time
 
 from selenium import webdriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.action_chains import ActionChains
 
-brower = webdriver.Chrome()
+# brower = webdriver.Chrome(r'/usr/local/lib/python3.9/site-packages/selenium/webdriver/chromedriver')
+brower = webdriver.Chrome(ChromeDriverManager().install())
 wait = WebDriverWait(brower, 10)
 
 
 def getCookies():
     # get login taobao cookies
-    url = "https://www.kjjxjy.com/center/myStudy/goods/detail?year=2019"
-    brower.get("https://www.kjjxjy.com/index/")
+    url = "https://xwcbedu.readoor.cn/"
+    brower.get("https://xwcbedu.readoor.cn/")
     while True:
         print("Please login in")
         time.sleep(3)
@@ -33,18 +36,16 @@ def getCookies():
 def readCookies():
     # if hava cookies file ,use it
     # if not , getTaobaoCookies()
-    if os.path.exists('jxjycookies.pickle'):
-        readPath = open('jxjycookies.pickle', 'rb')
-        Cookies = pickle.load(readPath)
-    else:
-        Cookies = getCookies()
+    # if os.path.exists('jxjycookies.pickle'):
+    #     readPath = open('jxjycookies.pickle', 'rb')
+    #     Cookies = pickle.load(readPath)
+    # else:
+    Cookies = getCookies()
     return Cookies
 
 
-if __name__ == '__main__':
-    Cookies = readCookies()
-
-    brower.get("https://www.kjjxjy.com/center/myStudy/goods/detail?year=2019")
+def old_code():
+    brower.get("https://xwcbedu.readoor.cn/")
     for cookie in Cookies:
         brower.add_cookie({
             "domain": ".kjjxjy.com",
@@ -117,4 +118,14 @@ if __name__ == '__main__':
         window = brower.window_handles
         brower.switch_to_window(window[0])
         time.sleep(3)
+    brower.quit()
+
+
+if __name__ == '__main__':
+    Cookies = readCookies()
+    to_study = "/html/body/div[2]/div[3]/div/div[1]/p[2]"
+    brower.find_elements(By.XPATH, to_study).click()
+    # brower.find_element_by_xpath(to_study).click()
+    time.sleep(3)
+    print()
     brower.quit()
