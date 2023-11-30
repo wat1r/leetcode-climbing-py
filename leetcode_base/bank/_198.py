@@ -12,15 +12,40 @@ class _1st:
 
 
 class _2nd:
-    print("")
+    def rob(self, nums: List[int]) -> int:
+        n = len(nums)
+        cache = [-1] * n
+
+        def dfs(i):
+            if i < 0:
+                return 0
+            if cache[i] != -1:
+                return cache[i]
+            ans = max(dfs(i - 1), dfs(i - 2) + nums[i])
+            cache[i] = ans
+            return ans
+
+        return dfs(n - 1)
 
 
 class _3rd:
-    print("")
+    def rob(self, nums: List[int]) -> int:
+        n = len(nums)
+        f = [0] * (n + 2)
+        for i, x in enumerate(nums):
+            f[i + 2] = max(f[i] + x, f[i + 1])
+        return f[n + 1]
 
 
 class _4th:
-    print("")
+    def rob(self, nums: List[int]) -> int:
+        n = len(nums)
+        f0 = f1 = 0
+        for i, x in enumerate(nums):
+            f = max(f0 + x, f1)
+            f0 = f1
+            f1 = f
+        return f1
 
 
 if __name__ == '__main__':
