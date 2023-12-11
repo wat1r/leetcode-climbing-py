@@ -5,7 +5,8 @@ from leetcode_base.random_leetcode_step_one import TreeNode
 
 class _1st:
     def rob(self, root: Optional[TreeNode]) -> int:
-        def dfs(root: TreeNode):
+        # [not_choose,choose,]表示不选/选当前节点，以当前节点为根的子树的最大点权和
+        def dfs(root: TreeNode) -> (int, int):
             if root is None:
                 return [0, 0]
             left = dfs(root.left)
@@ -19,7 +20,17 @@ class _1st:
 
 
 class _2nd:
-    print("")
+    def rob(self, root: Optional[TreeNode]) -> int:
+        def dfs(node: TreeNode):
+            if node is None:
+                return 0, 0
+            l_rob, l_not_rob = dfs(node.left)
+            r_rob, r_not_rob = dfs(node.right)
+            rob = l_not_rob + r_not_rob + node.val
+            not_rob = max(l_rob, l_not_rob) + max(r_rob, r_not_rob)
+            return rob, not_rob
+
+        return max(dfs(root))
 
 
 class _3rd:
