@@ -1,4 +1,8 @@
 from bs4 import BeautifulSoup
+from DrissionPage import ChromiumPage, ChromiumOptions
+
+# co = ChromiumOptions().auto_port()
+page = ChromiumPage(timeout=1)
 
 
 def test1():
@@ -44,7 +48,16 @@ def extract_text_and_images(html_content):
     return text, image_info
 
 
+def test_drission_page():
+    page.get('https://www.baidu.com')
+
+    tab_id = page.find_tabs(url='baidu.com')
+
+    print("----------")
+
+
 if __name__ == '__main__':
     # test1()
-    test2()
+    # test2()
+    test_drission_page()
     pass
