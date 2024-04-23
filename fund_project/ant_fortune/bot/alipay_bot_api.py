@@ -1,5 +1,6 @@
-from flask import Flask, jsonify  # flask库
+from flask import Flask, jsonify, request # flask库
 import time  # 时间模块
+import json
 
 app = Flask(__name__)  # 创建一个服务，赋值给APP
 
@@ -17,6 +18,17 @@ def test():
         }
     }
     return jsonify(response_data['SystemTimeObject'])
+
+
+@app.route('/alipay_bot', methods=['POST'])
+def alipay_bot():
+    data =request.get_data()
+    data = json.loads(data)
+    # bizDataJson: title/dec/content
+    # taskId/taskCode/bizData(title/summary/content)
+    print(data['title'])
+    print(data['content'])
+
 
 
 if __name__ == '__main__':

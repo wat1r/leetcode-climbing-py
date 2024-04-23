@@ -1,7 +1,11 @@
 from DrissionPage import ChromiumPage, ChromiumOptions
+from DrissionPage.common import Settings
+import time
+
+Settings.raise_when_ele_not_found = True
 
 # co = ChromiumOptions().auto_port()
-page = ChromiumPage()
+page = ChromiumPage(timeout=1)
 # co = ChromiumOptions().set_local_port(9111)
 # page = ChromiumPage(co)
 # print("init port:")
@@ -20,7 +24,7 @@ def transform_content(content: str):
     pass
 
 
-def login():
+def account_login():
     page.get(ENTRANCE_URL)
     life_btn = page('登录生活号(内容)', timeout=2)
     if life_btn:
@@ -50,16 +54,64 @@ def login():
         print("当前的login_btn button未找到")
 
 
-def write(content=""):
+def qr_code_login():
     pass
 
 
+def write(data=""):
+    creative_content_btn = page.ele('xpath://*[@id="J-sidenav"]/ul/li[2]/ul/li[2]/a')
+    if not creative_content_btn:
+        print("当前的creative_content_btn未找到")
+        return
+    creative_content_btn.click()
+    page.wait.load_start()
 
+    creative_right_now_btn = page.ele('xpath://*[@id="react-root"]/div/ul/li[1]/div/div[1]/div[3]/a/button')
+    creative_right_now_btn.click(timeout=2)
+
+    page.wait.load_start()
+
+    title_input = page.ele(
+        'xpath://*[@id="react-root"]/div/div/div/div[2]/div[1]/div/div/div/div[1]/div[2]/div/div[1]/div[1]/span/input')
+    # title_input.input()
+
+    abstract_input = page.ele(
+        'xpath://*[@id="react-root"]/div/div/div/div[2]/div[1]/div/div/div/div[1]/div[2]/div/div[1]/div[2]/textarea')
+
+    # page.to_tab(page.latest_tab)
+    # page.wait.load_start()
+    content_input = page.ele(
+        'xpath://*[@id="react-root"]/div/div/div/div[2]/div[1]/div/div/div/div[1]/div[2]/div/div[2]/div[2]')
+
+    next_step_btn = page.ele('xpath://*[@id="react-root"]/div/div/div/div[1]/div[2]/div/div/div/div/button[3]')
+    next_step_btn.click(timeout=1)
+
+    publish_btn = page.ele('xpath://*[@id="react-root"]/div/div/div/div[1]/div[2]/div/div/div/div/button[3]')
+    publish_btn.click(timeout=2)
+
+    pass
+
+
+"""
+上传图片/视频
+"""
+
+
+def upload():
+    image_btn = page.ele(
+        'xpath://*[@id="react-root"]/div/div/div/div[2]/div[1]/div/div/div/div[1]/div[1]/div[2]/button[1]')
+    image_btn.click(timeout=1)
+    page.wait.load_start()
+
+    using_image_btn = page.ele('xpath:/html/body/div[19]/div/div[2]/div/div[2]/div[3]/div/button[2]')
+    using_image_btn.click(timeout=1)
+
+    pass
 
 
 def main():
     # 登录
-    login()
+    account_login()
 
     # 退出浏览器
     page.quit()
