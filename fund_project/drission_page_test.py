@@ -26,6 +26,7 @@ def test1():
     for link in links:
         print(link.text)
 
+    page.quit()
 
 def mitm_dump_test():
     print("")

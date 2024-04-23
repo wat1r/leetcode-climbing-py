@@ -1,4 +1,4 @@
-from DrissionPage import ChromiumPage,ChromiumOptions
+from DrissionPage import ChromiumPage, ChromiumOptions
 
 # co = ChromiumOptions().auto_port()
 page = ChromiumPage()
@@ -8,7 +8,7 @@ page = ChromiumPage()
 
 ENTRANCE_URL = "https://s.alipay.com/"
 USER_NAME = "mbdly2008@163.com"
-PASSWORD = ""
+PASSWORD = "mon1day!"
 
 """
 转换content内容为去html格式的内容
@@ -41,7 +41,7 @@ def login():
     # 定位到密码文本框并输入密码
     page.ele('#password_rsainput', timeout=2).input(PASSWORD)
     # 登录的按钮
-    login_btn = page.ele('#J-login-life_btn', timeout=2)
+    login_btn = page.ele('#J-login-btn', timeout=2)
     if login_btn:
         # login_btn.click()
         # page.wait.load_start()
@@ -50,12 +50,20 @@ def login():
         print("当前的login_btn button未找到")
 
 
+def write(content=""):
+    pass
+
+
+
+
+
 def main():
     # 登录
     login()
 
     # 退出浏览器
     page.quit()
+
 
 if __name__ == '__main__':
     # page.quit()
