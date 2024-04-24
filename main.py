@@ -115,6 +115,7 @@ class AlipayBot:
 
         self.page.wait.load_start()
 
+
         title_input = self.page.ele(
             'xpath://*[@id="react-root"]/div/div/div/div[2]/div[1]/div/div/div/div[1]/div[2]/div/div[1]/div[1]/span/input')
         # title_input.input()
@@ -126,6 +127,25 @@ class AlipayBot:
         # page.wait.load_start()
         content_input = self.page.ele(
             'xpath://*[@id="react-root"]/div/div/div/div[2]/div[1]/div/div/div/div[1]/div[2]/div/div[2]/div[2]')
+
+
+        # class="anticon anticon-upload" 本地上传
+        s_page = SessionPage()
+        # self.page.upload_list
+        # upload = page('tag:input@type=file')
+        #
+        # # 传入一个路径
+        # upload.input('D:\\test1.txt')
+        #
+        # # 传入多个路径，方式 1
+        # paths = 'D:\\test1.txt\nD:\\test2.txt'
+        # upload.input(paths)
+        #
+        # # 传入多个路径，方式 2
+        # paths = ['D:\\test1.txt', 'D:\\test2.txt']
+        # upload.input(paths)
+
+
 
         next_step_btn = self.page.ele('xpath://*[@id="react-root"]/div/div/div/div[1]/div[2]/div/div/div/div/button[3]')
         next_step_btn.click(timeout=1)
