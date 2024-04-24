@@ -51,7 +51,8 @@ def extract_text_and_images(html_content):
 def test_drission_page():
     page.get('https://www.baidu.com')
 
-    tab_id = page.find_tabs(url='baidu.com')
+    # tab_id = page.find_tabs(url='baidu.com')
+
 
     print("----------")
 
