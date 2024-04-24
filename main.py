@@ -8,17 +8,6 @@ from config import read_config_file, Config
 Settings.raise_when_ele_not_found = True
 
 
-# # co = ChromiumOptions().auto_port()
-# page = ChromiumPage(timeout=1)
-# # co = ChromiumOptions().set_local_port(9111)
-# # page = ChromiumPage(co)
-# # print("init port:")
-#
-# ENTRANCE_URL = "https://s.alipay.com/"
-# USER_NAME = "mbdly2008@163.com"
-# PASSWORD = "mon1day!"
-
-
 class AlipayBot:
 
     def __init__(self, cfg: Config):
