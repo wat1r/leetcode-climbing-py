@@ -1,4 +1,4 @@
-from DrissionPage import ChromiumPage, ChromiumOptions
+from DrissionPage import ChromiumPage, ChromiumOptions, SessionPage
 from DrissionPage.common import Settings
 import time
 
@@ -45,6 +45,7 @@ class AlipayBot:
             return False
         self.page.set.cookies(cookies)
 
+        # 监听cookie的接口 https://collect.alipay.com/dwcookie?biztype=common&eventid=clicked&productid=PC&spmAPos=a710
         self.page.listen.start(self.cfg.entrance_url)
         self.page.get(self.cfg.entrance_url)
 
@@ -99,6 +100,15 @@ class AlipayBot:
             print("------")
         else:
             print("当前的login_btn button未找到")
+        # 存储cookie
+        # res = self.page.listen.wait()
+        # # self.page.ele(f'')
+        # # 'data-aspm-click="switchAccount"'
+        # nickname = res.response.body['data']['nickname']
+        # user_id = res.response.body['data']['userId']
+        # print(f"登录成功,\n\t用户ID: {nickname}\n\t用户昵称:{user_id}\n")
+        # cookies = self.page.cookies()
+        # save_cookies(data=cookies, filepath=self.cfg.cookie_filepath)
 
     def qr_code_login(self):
         pass
