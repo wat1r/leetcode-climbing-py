@@ -1,4 +1,4 @@
-from DrissionPage import ChromiumPage, ChromiumOptions
+from DrissionPage import ChromiumPage, ChromiumOptions, SessionPage
 from DrissionPage.common import Settings
 import time
 
@@ -6,17 +6,6 @@ from utils import read_cookies, save_cookies
 from config import read_config_file, Config
 
 Settings.raise_when_ele_not_found = True
-
-
-# # co = ChromiumOptions().auto_port()
-# page = ChromiumPage(timeout=1)
-# # co = ChromiumOptions().set_local_port(9111)
-# # page = ChromiumPage(co)
-# # print("init port:")
-#
-# ENTRANCE_URL = "https://s.alipay.com/"
-# USER_NAME = "mbdly2008@163.com"
-# PASSWORD = "mon1day!"
 
 
 class AlipayBot:
@@ -45,6 +34,7 @@ class AlipayBot:
             return False
         self.page.set.cookies(cookies)
 
+        # 监听cookie的接口 https://collect.alipay.com/dwcookie?biztype=common&eventid=clicked&productid=PC&spmAPos=a710
         self.page.listen.start(self.cfg.entrance_url)
         self.page.get(self.cfg.entrance_url)
 
@@ -99,6 +89,15 @@ class AlipayBot:
             print("------")
         else:
             print("当前的login_btn button未找到")
+        # 存储cookie
+        # res = self.page.listen.wait()
+        # # self.page.ele(f'')
+        # # 'data-aspm-click="switchAccount"'
+        # nickname = res.response.body['data']['nickname']
+        # user_id = res.response.body['data']['userId']
+        # print(f"登录成功,\n\t用户ID: {nickname}\n\t用户昵称:{user_id}\n")
+        # cookies = self.page.cookies()
+        # save_cookies(data=cookies, filepath=self.cfg.cookie_filepath)
 
     def qr_code_login(self):
         pass
@@ -116,6 +115,7 @@ class AlipayBot:
 
         self.page.wait.load_start()
 
+
         title_input = self.page.ele(
             'xpath://*[@id="react-root"]/div/div/div/div[2]/div[1]/div/div/div/div[1]/div[2]/div/div[1]/div[1]/span/input')
         # title_input.input()
@@ -127,6 +127,25 @@ class AlipayBot:
         # page.wait.load_start()
         content_input = self.page.ele(
             'xpath://*[@id="react-root"]/div/div/div/div[2]/div[1]/div/div/div/div[1]/div[2]/div/div[2]/div[2]')
+
+
+        # class="anticon anticon-upload" 本地上传
+        s_page = SessionPage()
+        # self.page.upload_list
+        # upload = page('tag:input@type=file')
+        #
+        # # 传入一个路径
+        # upload.input('D:\\test1.txt')
+        #
+        # # 传入多个路径，方式 1
+        # paths = 'D:\\test1.txt\nD:\\test2.txt'
+        # upload.input(paths)
+        #
+        # # 传入多个路径，方式 2
+        # paths = ['D:\\test1.txt', 'D:\\test2.txt']
+        # upload.input(paths)
+
+
 
         next_step_btn = self.page.ele('xpath://*[@id="react-root"]/div/div/div/div[1]/div[2]/div/div/div/div/button[3]')
         next_step_btn.click(timeout=1)
