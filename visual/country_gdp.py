@@ -14,7 +14,7 @@ plt.rcParams['axes.unicode_minus'] = False
 plt.rc('axes', axisbelow=True)
 mpl.rcParams['animation.embed_limit'] = 2 ** 128
 
-df = pd.read_csv(r'/Users/frankcooper/Data/20tmp/main_country.csv', index_col=1)  # 改成自己的地址
+df = pd.read_csv(r'D:\Dev\Data\input\main_country.csv', index_col=1)  # 改成自己的地址
 
 for year in range(1960, 2018):
     df[str(year) + '_rank'] = 11 - df[str(year)].rank(ascending=False)
