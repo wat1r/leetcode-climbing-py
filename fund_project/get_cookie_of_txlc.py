@@ -53,10 +53,11 @@ class Test:
         # 这里编写我们的 mock 逻辑代码
         breakpoint_url = "https://www.tencentwm.com/"
         url = flow.request.pretty_url
-        print("================url->", url)
+        # print("================url->", url)
         if str(url).__contains__(breakpoint_url):
             cookies = flow.request.cookies
             print("cookies:", cookies)
+            self.append_data("./20240529_cookies", str(cookies)+"\n")
             response_content = json.loads(flow.response.content.decode("utf-8"))
             print("=========response_content", response_content)
             response_content['total'] = 20
@@ -70,6 +71,14 @@ class Test:
             #     response_content['users'].append(userinfo)
             # new_response.set_response_body(json.dumps(response_content))
 
+    def append_data(self, file_path, data):
+        try:
+            with open(file_path, 'a') as file:
+                file.write(data)
+        except IOError as e:
+            print(f"An error occurred while appending to the file: {e}")
+
+    
 
 addons = [
     Test()

@@ -1,10 +1,12 @@
 import json
 import time
+import urllib.request
 
 from DrissionPage import ChromiumPage
 from DrissionPage._functions.by import By
 from DrissionPage import ChromiumOptions, ChromiumPage
 from requests import request
+import ssl
 
 co = ChromiumOptions().set_load_mode('none')
 co.set_argument('--start-maximized')
@@ -83,6 +85,26 @@ def ant_fortune():
     pass
 
 
+def download_file(src_url, file_save_path):
+    """
+    下载文件到本地工作目录[图片|视频]
+    :param src_url: 图床url
+    :param file_save_path: 存储的目录
+    :return:
+    """
+    try:
+        context = ssl._create_unverified_context()  # 创建一个不验证SSL证书的上下文
+        # 创建一个不验证证书的opener
+        opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=context))
+        # 安装opener
+        urllib.request.install_opener(opener)
+        urllib.request.urlretrieve(src_url, file_save_path)
+    except Exception as e:
+        print(f"download_file##Exception->：{e}")
+        return None
+    return file_save_path
+
+
 # 自定义序列化函数
 def serialize(obj):
     if isinstance(obj, AntFortuneResult):
@@ -115,7 +137,16 @@ class AntFortuneResult:
         return f"AntFortuneResult(contentId={self.contentId!r}, title={self.title!r}, showAuditStatus={self.showAuditStatus!r}, userId={self.userId!r}, publishDate={self.publishDate!r})"
 
 
+def format_test():
+    url_body = "https://s.alipay.com/life/web/fortune/content-details?contentId=%s&source=newSee"
+    url = url_body % "2021004143654415DG1c4753c2f9064f45bd39e374ddf27276"
+    print(url)
+
+
 if __name__ == '__main__':
     # gitee()
     # douban()
-    ant_fortune()
+    # ant_fortune()
+    # download_file()
+    format_test()
+    pass
