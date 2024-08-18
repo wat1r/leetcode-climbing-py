@@ -47,7 +47,6 @@ class HTTPRecordModifier:
 
 class Test:
 
-
     def response(self, flow: http.HTTPFlow):
         current_date = datetime.datetime.now().strftime('%Y%m%d')
         """
@@ -56,19 +55,20 @@ class Test:
         # 这里编写我们的 mock 逻辑代码
         breakpoint_url = "https://www.tencentwm.com/"
         url = flow.request.pretty_url
-        # print("================url->", url)
-        if str(url).__contains__(breakpoint_url):
-            cookies = flow.request.cookies
-            print("cookies:", cookies)
-            self.append_data(f"./{current_date}_cookies", str(cookies)+"\n")
-            response_content = json.loads(flow.response.content.decode("utf-8"))
-            print("=========response_content", response_content)
-            response_content['total'] = 20
-            new_response = HTTPRecordModifier(flow)
-            print("new_response", new_response)
-            userinfo = {
-                # 这里放置上面抓包获取的用户信息格式
-            }
+        print("================url->", url)
+        cookies = flow.request.cookies
+        # print("cookies:", cookies)
+        # self.append_data(f"./{current_date}_ant", str(cookies) + "\n")
+        # response_content = json.loads(flow.response.content.decode("utf-8"))
+        # print("=========response_content", response_content)
+        # self.append_data(f"./{current_date}_ant", str(response_content) + "\n")
+        # response_content['total'] = 20
+        # new_response = HTTPRecordModifier(flow)
+        # print("new_response", new_response)
+        userinfo = {
+            # 这里放置上面抓包获取的用户信息格式
+        }
+
 
             # for i in range(response_content['total']):
             #     response_content['users'].append(userinfo)
@@ -81,7 +81,6 @@ class Test:
         except IOError as e:
             print(f"An error occurred while appending to the file: {e}")
 
-    
 
 addons = [
     Test()
