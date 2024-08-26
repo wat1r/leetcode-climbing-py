@@ -14,7 +14,7 @@ import requests
 urllib3.disable_warnings()
 
 target_list = {
-    "date": ["2024-08-28"],
+    "date": [],
     "match": ["17:00--18:00", "18:00--19:00", "19:00--20:00", "20:00--21:00", "21:00--22:00"]
 }
 
@@ -41,7 +41,6 @@ def detect_sku(time_date: str = None):
         # 'Accept-Encoding': 'gzip, deflate, br',
         'Accept-Language': 'zh-CN,zh;q=0.9',
     }
-    time_date = '2024-08-28'
     data = {
         'business_id': '10000785',
         'stadium_id': '11501',
