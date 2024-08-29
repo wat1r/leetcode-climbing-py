@@ -111,7 +111,7 @@ def init():
     next_saturday = today + timedelta(days=days_to_saturday)
     formatted_next_saturday = next_saturday.strftime('%Y-%m-%d')
     global target_list
-    # target_list['date'].clear()
+    target_list['date'].clear()
     target_list['date'].append(formatted_next_saturday)
     print(f"target_list---->{target_list}")
 
