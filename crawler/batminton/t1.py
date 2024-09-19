@@ -31,8 +31,8 @@ def detect_sku(time_date: str = None):
         'Connection': 'keep-alive',
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json, text/plain, */*',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x63090b19)XWEB/11177',
-        'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyNDg0Nzk1OSwiaWQiOiIxNzI0ODQ3OTU5MDM4NTIiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.caa3WW1zF2psLRSvtdFxBkzA1FJuaCKPGhBTxTnjxiE',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x63090c0f)XWEB/11275',
+        'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyNjY2NDQ5NCwiaWQiOiIxNzI2NjY0NDk0MDI5ODQiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.BENuof5MyQ427kI7VOP_LGvSu7feeUDAQ4Xyyr4MUXM',
         'Origin': 'https://xcx.wesais.com',
         'Sec-Fetch-Site': 'same-site',
         'Sec-Fetch-Mode': 'cors',
@@ -46,8 +46,9 @@ def detect_sku(time_date: str = None):
         'stadium_id': '11501',
         'ground_id': '11501001',
         'time_date': time_date,
-        'request_id': '97e2b446d763a52c592c39225f0e8b87',
+        'request_id': 'a1750c365b50b761457615cd1bdfd519',
     }
+
     print(f"detect time_date:{time_date}")
     if time_date not in target_list['date']:
         print(f"{time_date} is not in candidate date")
