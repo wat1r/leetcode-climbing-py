@@ -10,12 +10,15 @@ import urllib3
 from apscheduler.schedulers.background import BackgroundScheduler
 import requests
 
+# 苏州新时代文体联盟
+
 # 关掉不安全证书的警告
 urllib3.disable_warnings()
 
 target_list = {
     "date": [],
-    "match": ["17:00--18:00", "18:00--19:00", "19:00--20:00", "20:00--21:00", "21:00--22:00"]
+    "match": ["17:00--18:00", "18:00--19:00", "19:00--20:00", "20:00--21:00", "21:00--22:00"],
+    # "match": ["12:00--13:00", "13:00--14:00", "14:00--15:00", "15:00--16:00", "16:00--17:00"]
 }
 
 warning_info = dict()
@@ -32,7 +35,8 @@ def detect_sku(time_date: str = None):
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json, text/plain, */*',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x63090c0f)XWEB/11275',
-        'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyNjY2NDQ5NCwiaWQiOiIxNzI2NjY0NDk0MDI5ODQiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.BENuof5MyQ427kI7VOP_LGvSu7feeUDAQ4Xyyr4MUXM',
+        # 替换
+        'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTU2NDQxOCwiaWQiOiIxNzI5NTY0NDE4MDEwMDEiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.K27Fh3XXrqWA6Mqg3bAtWTfSRGJ8iZAhLW7LR1Z-Bq4',
         'Origin': 'https://xcx.wesais.com',
         'Sec-Fetch-Site': 'same-site',
         'Sec-Fetch-Mode': 'cors',
@@ -41,13 +45,15 @@ def detect_sku(time_date: str = None):
         # 'Accept-Encoding': 'gzip, deflate, br',
         'Accept-Language': 'zh-CN,zh;q=0.9',
     }
+    request_id = '8a681fd0f8d19f5cb9580ef018dc9814'
     data = {
         'business_id': '10000785',
         'stadium_id': '11501',
         'ground_id': '11501001',
         'time_date': time_date,
-        'request_id': 'a1750c365b50b761457615cd1bdfd519',
+        'request_id': request_id,  # 待替换
     }
+    # business_id=10000785&stadium_id=11501&ground_id=11501001&time_date=2024-10-24&request_id=ad3fcc5ad037caa7343b49d5fe0ccf2f
 
     print(f"detect time_date:{time_date}")
     if time_date not in target_list['date']:
@@ -68,9 +74,10 @@ def detect_sku(time_date: str = None):
                 for s in sku_item:
                     if time_date in target_list['date']:
                         if not s['is_lock'] and s['time_str'] in target_list['match']:
-                            collect_info.append(
-                                time_date + "_" + s['sku_name'] + "#" + s['time_str'] + "#" + ("已定" if s[
-                                    'is_lock'] else "空闲"))
+                            if s['is_lock'] is not None and not s['is_lock']:
+                                collect_info.append(
+                                    time_date + "_" + s['sku_name'] + "#" + s['time_str'] + "#" + ("已定" if s[
+                                        'is_lock'] else "空闲") + "#" + s['sku'])
                             print(s['sku_name'] + "场次:" + time_date + " " + s['time_str'] + (
                                 "已定" if s['is_lock'] else "空闲"))
     except Exception as ex:
@@ -79,6 +86,13 @@ def detect_sku(time_date: str = None):
         content = """
     ### **南部市民中心**
     """
+        sku_body = build_sku_slice(get_random_sku_slice(collect_info))
+        print("sku_body->", sku_body)
+        data = f"business_id=10000785&stadium_id=11501&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
+
+        response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data, verify=False)
+        print("response--->", response.json())
+
         for item in collect_info:
             v = item.split("#")
             content += create_warn_content(field=v[0], match=v[1], field_status=v[2])
@@ -112,7 +126,7 @@ def init():
     next_saturday = today + timedelta(days=days_to_saturday)
     formatted_next_saturday = next_saturday.strftime('%Y-%m-%d')
     global target_list
-    target_list['date'].clear()
+    # target_list['date'].clear()
     target_list['date'].append(formatted_next_saturday)
     print(f"target_list---->{target_list}")
 
@@ -141,6 +155,27 @@ def build_date(interval: int):
     return formatted_future_date
 
 
+def build_sku_slice(candidates: list):
+    if not candidates or len(candidates) == 0:
+        return
+    sku_slice = ""
+    for i in range(0, len(candidates)):
+        sku_slice += candidates[i] + "%3A1"
+        if i != len(candidates) - 1:
+            sku_slice += "%2C"
+    print("sku_slice:", sku_slice)
+    return sku_slice
+
+
+def get_random_sku_slice(collect_info: list):
+    candidates = []
+    for item in collect_info:
+        candidates.append(item.split("#")[-1])
+        if len(candidates) == 2:
+            print("candidates->", candidates)
+            return candidates
+
+
 def start_job():
     print("start_job_core start")
     start_job_core()
@@ -164,5 +199,5 @@ def start_job_core():
 
 
 if __name__ == '__main__':
-    start_job()
-    # detect_sku()
+    # start_job()
+    detect_sku()
