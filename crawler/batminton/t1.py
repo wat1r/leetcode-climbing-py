@@ -29,14 +29,15 @@ def detect_sku(time_date: str = None):
     if not time_date:
         time_date = build_date(interval=2)
     init()
+    # 替换
+    auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTU2NDQxOCwiaWQiOiIxNzI5NTY0NDE4MDEwMDEiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.K27Fh3XXrqWA6Mqg3bAtWTfSRGJ8iZAhLW7LR1Z-Bq4"
     headers = {
         'Host': 'api.wesais.com',
         'Connection': 'keep-alive',
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json, text/plain, */*',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x63090c0f)XWEB/11275',
-        # 替换
-        'Authorization': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTU2NDQxOCwiaWQiOiIxNzI5NTY0NDE4MDEwMDEiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.K27Fh3XXrqWA6Mqg3bAtWTfSRGJ8iZAhLW7LR1Z-Bq4',
+        'Authorization': auth_token,
         'Origin': 'https://xcx.wesais.com',
         'Sec-Fetch-Site': 'same-site',
         'Sec-Fetch-Mode': 'cors',
@@ -45,6 +46,7 @@ def detect_sku(time_date: str = None):
         # 'Accept-Encoding': 'gzip, deflate, br',
         'Accept-Language': 'zh-CN,zh;q=0.9',
     }
+    # 替换
     request_id = '8a681fd0f8d19f5cb9580ef018dc9814'
     data = {
         'business_id': '10000785',
@@ -53,8 +55,6 @@ def detect_sku(time_date: str = None):
         'time_date': time_date,
         'request_id': request_id,  # 待替换
     }
-    # business_id=10000785&stadium_id=11501&ground_id=11501001&time_date=2024-10-24&request_id=ad3fcc5ad037caa7343b49d5fe0ccf2f
-
     print(f"detect time_date:{time_date}")
     if time_date not in target_list['date']:
         print(f"{time_date} is not in candidate date")
