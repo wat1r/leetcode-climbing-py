@@ -202,5 +202,5 @@ def start_job_core():
 
 
 if __name__ == '__main__':
-    # start_job()
-    detect_sku()
+    start_job()
+    # detect_sku()
