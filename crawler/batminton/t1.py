@@ -16,11 +16,11 @@ import requests
 urllib3.disable_warnings()
 
 target_list = {
-    # "date": [],
-    "date": ['2024-10-25'],
+    "date": [],
+    # "date": ['2024-10-25'],
     # "match": ["17:00--18:00", "18:00--19:00", "19:00--20:00", "20:00--21:00", "21:00--22:00"],
-    # "match": ["18:00--19:00", "19:00--20:00", "20:00--21:00", "21:00--22:00"],
-    "match": ["12:00--13:00", "13:00--14:00", "14:00--15:00", "15:00--16:00", "16:00--17:00"]
+    "match": ["18:00--19:00", "19:00--20:00", "20:00--21:00", "21:00--22:00"],
+    # "match": ["12:00--13:00", "13:00--14:00", "14:00--15:00", "15:00--16:00", "16:00--17:00"]
 }
 
 warning_info = dict()
@@ -89,12 +89,12 @@ def detect_sku(time_date: str = None):
     ### **南部市民中心**
     """
         # 提交订单，订单只有7分钟的支付时间
-        # sku_body = build_sku_slice(get_random_sku_slice(collect_info))
-        # print("sku_body->", sku_body)
-        # data = f"business_id=10000785&stadium_id=11501&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
-        #
-        # response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data, verify=False)
-        # print("response--->", response.json())
+        sku_body = build_sku_slice(get_random_sku_slice(collect_info))
+        print("sku_body->", sku_body)
+        data = f"business_id=10000785&stadium_id=11501&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
+
+        response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data, verify=False)
+        print("response--->", response.json())
 
         for item in collect_info:
             v = item.split("#")
