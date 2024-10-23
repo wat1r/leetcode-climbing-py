@@ -32,7 +32,7 @@ def detect_sku(time_date: str = None):
         time_date = build_date(interval=2)
     init()
     # 替换
-    auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTU2NDQxOCwiaWQiOiIxNzI5NTY0NDE4MDEwMDEiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.K27Fh3XXrqWA6Mqg3bAtWTfSRGJ8iZAhLW7LR1Z-Bq4"
+    auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTY4OTM3NywiaWQiOiIxNzI5Njg5Mzc3MDI5NzciLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.yM8sHwWjwzotgFu4rVYZlujx-btxK-PWft6NPFPSTJ8"
     headers = {
         'Host': 'api.wesais.com',
         'Connection': 'keep-alive',
@@ -49,7 +49,7 @@ def detect_sku(time_date: str = None):
         'Accept-Language': 'zh-CN,zh;q=0.9',
     }
     # 替换
-    request_id = '8a681fd0f8d19f5cb9580ef018dc9814'
+    request_id = '13894af7f8b6af98540dc13c4d48a6ec'
     data = {
         'business_id': '10000785',
         'stadium_id': '11501',
