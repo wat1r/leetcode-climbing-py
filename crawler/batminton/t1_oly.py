@@ -91,6 +91,7 @@ def detect_sku(time_date: str = None):
     except Exception as ex:
         print(f"detect_sku--->{ex}")
     cube_info = cube_collect_info(collect_info)
+    print("cube_info:", cube_info)
     if cube_info is not None and len(cube_info) > 0:
         content = """
     ### **奥体中心**
@@ -217,6 +218,6 @@ def start_job_core():
 
 
 if __name__ == '__main__':
-    start_job()
-    # detect_sku()
+    # start_job()
+    detect_sku()
     # init()
