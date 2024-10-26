@@ -18,13 +18,16 @@ urllib3.disable_warnings()
 # A区 10-12,17-19
 
 target_list = {
-    # "date": [],
-    "date": ['2024-10-31'],
+    "date": [],
+    # "date": ['2024-11-01'],
     "match": ["19:00--20:00", "20:00--21:00"],
-    # "match": ["12:00--13:00", "13:00--14:00", "14:00--15:00", "15:00--16:00", "16:00--17:00"]
+    # "match": ["10:00--11:00", "11:00--12:00", "12:00--13:00", "13:00--14:00", "14:00--15:00", "15:00--16:00",
+    #           "16:00--17:00"]
 }
 
 warning_info = dict()
+
+split_symbol = "@#"
 
 
 def detect_sku(time_date: str = None):
@@ -33,7 +36,7 @@ def detect_sku(time_date: str = None):
         time_date = build_date(interval=6)
     init()
     # 替换
-    auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTg2MjUyNSwiaWQiOiIxNzI5ODYyNTI1MDE1NzMiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.fVOpbdMp0N6GkJOtroYKbLqXgsOxO5bniKLHfXAqafI"
+    auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTkwNTM3MCwiaWQiOiIxNzI5OTA1MzcwMDAzOTciLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.VyuvVfbrAu5QaMqQ5jhPqyFTvRp4oMIKmBgbbU3lI5s"
     headers = {
         'Host': 'api.wesais.com',
         'Connection': 'keep-alive',
@@ -50,7 +53,7 @@ def detect_sku(time_date: str = None):
         'Accept-Language': 'zh-CN,zh;q=0.9',
     }
     # 替换
-    request_id = '97ef2ef2ea7465f18580f5df863a2ed1'
+    request_id = 'd170deb276dd7bff264e8cb029471b2e'
     data = {
         'business_id': '10000935',
         'stadium_id': '11733',
@@ -79,26 +82,29 @@ def detect_sku(time_date: str = None):
                         if not s['is_lock'] and s['time_str'] in target_list['match']:
                             if s['is_lock'] is not None and not s['is_lock']:
                                 collect_info.append(
-                                    time_date + "_" + s['sku_name'] + "#" + s['time_str'] + "#" + ("已定" if s[
-                                        'is_lock'] else "空闲") + "#" + s['sku'])
+                                    time_date + "_" + s['sku_name'].replace(" ", "") + split_symbol + s[
+                                        'time_str'] + split_symbol + (
+                                        "已定" if s[
+                                            'is_lock'] else "空闲") + split_symbol + s['sku'])
                             print(s['sku_name'] + "场次:" + time_date + " " + s['time_str'] + (
                                 "已定" if s['is_lock'] else "空闲"))
     except Exception as ex:
         print(f"detect_sku--->{ex}")
-    if collect_info is not None and len(collect_info) > 0:
+    cube_info = cube_collect_info(collect_info)
+    if cube_info is not None and len(cube_info) > 0:
         content = """
     ### **奥体中心**
     """
-        # 提交订单，订单只有7分钟的支付时间
-        # sku_body = build_sku_slice(get_random_sku_slice(collect_info))
-        # print("sku_body->", sku_body)
-        # data = f"business_id=10000785&stadium_id=11501&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
-        #
-        # response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data, verify=False)
-        # print("response--->", response.json())
+        # # 提交订单，订单只有7分钟的支付时间
+        sku_body = build_sku_slice(get_random_sku_slice(cube_info))
+        print("sku_body->", sku_body)
+        data = f"business_id=10000935&stadium_id=11733&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
 
-        for item in collect_info:
-            v = item.split("#")
+        response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data, verify=False)
+        print("response--->", response.json())
+
+        for item in cube_info:
+            v = item.split(split_symbol)
             content += create_warn_content(field=v[0], match=v[1], field_status=v[2])
         if content and content != "":
             send_weixin(content)
@@ -122,7 +128,6 @@ def create_warn_content(field: str = "", match: str = "", field_status: str = ""
 
 def init():
     today = datetime.now()
-
     # 计算6天后的时间
     six_days_later = today + timedelta(days=6)
     formatted_six_days_later = six_days_later.strftime('%Y-%m-%d')
@@ -171,10 +176,22 @@ def build_sku_slice(candidates: list):
 def get_random_sku_slice(collect_info: list):
     candidates = []
     for item in collect_info:
-        candidates.append(item.split("#")[-1])
+        candidates.append(item.split(split_symbol)[-1])
         if len(candidates) == 2:
             print("candidates->", candidates)
             return candidates
+
+
+def cube_collect_info(collect_info: list):
+    area = "羽毛球A区"
+    no_list = [10, 11, 12, 17, 18, 19]
+    combined_list = [f"{area}---{no}#" for no in no_list]
+    cube_info = []
+    for item in collect_info:
+        arr = item.split(split_symbol)
+        if arr[0].split("_")[1] in combined_list:
+            cube_info.append(item)
+    return cube_info
 
 
 def start_job():
@@ -200,5 +217,6 @@ def start_job_core():
 
 
 if __name__ == '__main__':
-    # start_job()
-    detect_sku()
+    start_job()
+    # detect_sku()
+    # init()
