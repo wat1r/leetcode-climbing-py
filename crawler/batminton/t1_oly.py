@@ -36,7 +36,7 @@ def detect_sku(time_date: str = None):
         time_date = build_date(interval=6)
     init()
     # 替换
-    auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTkwNTM3MCwiaWQiOiIxNzI5OTA1MzcwMDAzOTciLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.VyuvVfbrAu5QaMqQ5jhPqyFTvRp4oMIKmBgbbU3lI5s"
+    auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTk4ODIxOSwiaWQiOiIxNzI5OTg4MjE5MDE1NzMiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.zzamXD2BJ0vdpkUbdtsXkTgP7DOsUX4chPTTWW8vVCg"
     headers = {
         'Host': 'api.wesais.com',
         'Connection': 'keep-alive',
@@ -53,7 +53,7 @@ def detect_sku(time_date: str = None):
         'Accept-Language': 'zh-CN,zh;q=0.9',
     }
     # 替换
-    request_id = 'd170deb276dd7bff264e8cb029471b2e'
+    request_id = '86a277d9bd81ffd4cdac54de0fa4f42d'
     data = {
         'business_id': '10000935',
         'stadium_id': '11733',
@@ -186,6 +186,7 @@ def get_random_sku_slice(collect_info: list):
 def cube_collect_info(collect_info: list):
     area = "羽毛球A区"
     no_list = [10, 11, 12, 17, 18, 19]
+    # no_list = [19]
     combined_list = [f"{area}---{no}#" for no in no_list]
     cube_info = []
     for item in collect_info:
