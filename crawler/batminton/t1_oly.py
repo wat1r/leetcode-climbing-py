@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 import time
 from datetime import datetime, timedelta
@@ -222,12 +223,23 @@ def parse_config():
     config_path = sys.argv[1]
     # 打印所有参数
     print("config path:", config_path)
+    directory = os.path.dirname(config_path)
     with open(config_path, 'r', encoding='utf-8') as file:
         # 读取文件内容
         content = file.read()
+    with open(directory + "\\response.txt", 'r', encoding='utf-8') as file:
+        # 读取所有行到一个列表中
+        lines = file.readlines()
+    # "D:\Dev\Data\input\batminton\response.txt"
+    response_content = lines[-1] if lines else None
+    if response_content:
+        _response_content = json.loads(response_content)
     global _config
     _config = json.loads(content)
     print("before _config:", _config)
+    if _response_content:
+        _config['user_info']['auth_token'] = _response_content['auth_token']
+        _config['user_info']['request_id'] = get_request_id(_response_content['request_body'])
     for item in _config['targetList']:
         venue_detail = [f"{item['court']}---{venue}#" for venue in item['venue']]
         item['venue_detail'] = venue_detail
@@ -249,6 +261,21 @@ def parse_config():
                 print(next_date.strftime("%Y-%m-%d"))
         item['date_detail'] = date_detail
     print("after _config:", _config)
+
+
+def get_request_id(request_body: str):
+    # 以'&'分割字符串，得到一个包含多个键值对的列表
+    params = request_body.split('&')
+    # 创建一个空字典来存储参数
+    params_dict = {}
+
+    # 遍历列表，将每个键值对分割并存储到字典中
+    for param in params:
+        key, value = param.split('=')
+        params_dict[key] = value
+    # 获取request_id的值
+    request_id = params_dict.get('request_id', None)
+    return request_id
 
 
 def get_target_date():
