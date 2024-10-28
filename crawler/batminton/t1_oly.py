@@ -1,14 +1,11 @@
 import json
-import os
 import sys
+import time
 from datetime import datetime, timedelta
 
-import time
-from concurrent.futures import Future, ThreadPoolExecutor
-
+import requests
 import urllib3
 from apscheduler.schedulers.background import BackgroundScheduler
-import requests
 
 # 苏州新时代文体联盟
 
@@ -23,7 +20,10 @@ target_list = {
     "match": ["19:00--20:00", "20:00--21:00"],
     # "match": ["10:00--11:00", "11:00--12:00", "12:00--13:00", "13:00--14:00", "14:00--15:00", "15:00--16:00",
     #           "16:00--17:00"]
+
 }
+
+_config = None
 
 warning_info = dict()
 
@@ -36,7 +36,20 @@ def detect_sku(time_date: str = None):
         time_date = build_date(interval=6)
     init()
     # 替换
-    auth_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTk4ODIxOSwiaWQiOiIxNzI5OTg4MjE5MDE1NzMiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.zzamXD2BJ0vdpkUbdtsXkTgP7DOsUX4chPTTWW8vVCg"
+    ready_to_request = False
+    global _config
+    for target in _config['targetList']:
+        if time_date in target['date_detail']:
+            ready_to_request = True
+            break
+    if not ready_to_request:
+        print(f"max {time_date} is not candidates ,return.")
+        return
+    auth_token = _config['user_info']["auth_token"] if "user_info" in _config and "auth_token" in _config[
+        'user_info'] and _config['user_info'][
+                                                           "auth_token"] != "" else "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTk4ODIxOSwiaWQiOiIxNzI5OTg4MjE5MDE1NzMiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.zzamXD2BJ0vdpkUbdtsXkTgP7DOsUX4chPTTWW8vVCg"
+    request_id = _config['user_info']["request_id"] if "user_info" in _config and "request_id" in _config[
+        'user_info'] and _config['user_info']["request_id"] != "" else '86a277d9bd81ffd4cdac54de0fa4f42d'
     headers = {
         'Host': 'api.wesais.com',
         'Connection': 'keep-alive',
@@ -53,7 +66,13 @@ def detect_sku(time_date: str = None):
         'Accept-Language': 'zh-CN,zh;q=0.9',
     }
     # 替换
-    request_id = '86a277d9bd81ffd4cdac54de0fa4f42d'
+    for target in _config['targetList']:
+        for time_date in target['date_detail']:
+            print(f"current request date:{time_date}")
+            api_request(time_date=time_date, request_id=request_id, headers=headers)
+
+
+def api_request(time_date: str, request_id: str, headers: dict):
     data = {
         'business_id': '10000935',
         'stadium_id': '11733',
@@ -62,13 +81,10 @@ def detect_sku(time_date: str = None):
         'request_id': request_id,  # 待替换
     }
     print(f"detect time_date:{time_date}")
-    if time_date not in target_list['date']:
-        print(f"{time_date} is not in candidate date")
-        return
     response = requests.post('https://api.wesais.com/field/wxFieldBuyPlan/getList', headers=headers, data=data,
                              verify=False)
     result = response.json()
-    print(f"A---result--->{result}")
+    # print(f"A---result--->{result}")
     if "code" not in result or result['code'] != 200:
         print(f"B---result--->{result}")
         return
@@ -78,31 +94,34 @@ def detect_sku(time_date: str = None):
         for sku in sku_list:
             for sku_item in sku:
                 for s in sku_item:
-                    if time_date in target_list['date']:
-                        if not s['is_lock'] and s['time_str'] in target_list['match']:
-                            if s['is_lock'] is not None and not s['is_lock']:
-                                collect_info.append(
-                                    time_date + "_" + s['sku_name'].replace(" ", "") + split_symbol + s[
-                                        'time_str'] + split_symbol + (
-                                        "已定" if s[
-                                            'is_lock'] else "空闲") + split_symbol + s['sku'])
-                            print(s['sku_name'] + "场次:" + time_date + " " + s['time_str'] + (
-                                "已定" if s['is_lock'] else "空闲"))
+                    global _config
+                    for target in _config['targetList']:
+                        if time_date in target['date_detail']:
+                            if not s['is_lock'] and s['time_str'] in target['match']:
+                                if s['is_lock'] is not None and not s['is_lock']:
+                                    collect_info.append(
+                                        time_date + "_" + s['sku_name'].replace(" ", "") + split_symbol + s[
+                                            'time_str'] + split_symbol + (
+                                            "已定" if s[
+                                                'is_lock'] else "空闲") + split_symbol + s['sku'])
+                                # print(s['sku_name'].replace(" ", "") + "场次:" + time_date + " " + s['time_str'] + (
+                                #     "已定" if s['is_lock'] else "空闲"))
     except Exception as ex:
         print(f"detect_sku--->{ex}")
     cube_info = cube_collect_info(collect_info)
-    print("cube_info:", cube_info)
+    print("----cube_info:", cube_info)
     if cube_info is not None and len(cube_info) > 0:
         content = """
-    ### **奥体中心**
-    """
-        # # 提交订单，订单只有7分钟的支付时间
-        sku_body = build_sku_slice(get_random_sku_slice(cube_info))
-        print("sku_body->", sku_body)
-        data = f"business_id=10000935&stadium_id=11733&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
+        ### **奥体中心**
+        """
 
-        response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data, verify=False)
-        print("response--->", response.json())
+        # # 提交订单，订单只有8分钟的支付时间
+        # sku_body = build_sku_slice(get_random_sku_slice(cube_info))
+        # print("sku_body->", sku_body)
+        # data = f"business_id=10000935&stadium_id=11733&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
+        #
+        # response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data, verify=False)
+        # print("order create response--->", response.json())
 
         for item in cube_info:
             v = item.split(split_symbol)
@@ -116,7 +135,7 @@ def detect_sku(time_date: str = None):
             print(f"warning_info:{warning_info}")
             if warning_info[today] >= 3:
                 print("warning_info has already send 3 times,quit")
-                sys.exit()
+                sys.exit(1)
 
 
 def create_warn_content(field: str = "", match: str = "", field_status: str = ""):
@@ -128,14 +147,15 @@ def create_warn_content(field: str = "", match: str = "", field_status: str = ""
 
 
 def init():
-    today = datetime.now()
-    # 计算6天后的时间
-    six_days_later = today + timedelta(days=6)
-    formatted_six_days_later = six_days_later.strftime('%Y-%m-%d')
-    global target_list
-    # target_list['date'].clear()
-    target_list['date'].append(formatted_six_days_later)
-    print(f"target_list---->{target_list}")
+    # today = datetime.now()
+    # # 计算6天后的时间
+    # six_days_later = today + timedelta(days=6)
+    # formatted_six_days_later = six_days_later.strftime('%Y-%m-%d')
+    # global target_list
+    # # target_list['date'].clear()
+    # target_list['date'].append(formatted_six_days_later)
+    # print(f"target_list---->{target_list}")
+    parse_config()
 
 
 # warnContent = bytes(warnContent, 'utf-8').decode('unicode_escape')
@@ -184,16 +204,73 @@ def get_random_sku_slice(collect_info: list):
 
 
 def cube_collect_info(collect_info: list):
-    area = "羽毛球A区"
-    no_list = [10, 11, 12, 17, 18, 19]
-    # no_list = [19]
-    combined_list = [f"{area}---{no}#" for no in no_list]
     cube_info = []
-    for item in collect_info:
-        arr = item.split(split_symbol)
-        if arr[0].split("_")[1] in combined_list:
-            cube_info.append(item)
+    for target in _config['targetList']:
+        venue_detail = target['venue_detail']
+        # court = item['court']
+        for candidate in collect_info:
+            arr = candidate.split(split_symbol)
+            if arr[0].split("_")[1] in venue_detail:
+                cube_info.append(candidate)
     return cube_info
+
+
+def parse_config():
+    if len(sys.argv) < 2:
+        print("Usage: python script.py <arg1> [<arg2>...]")
+        sys.exit(1)
+    config_path = sys.argv[1]
+    # 打印所有参数
+    print("config path:", config_path)
+    with open(config_path, 'r', encoding='utf-8') as file:
+        # 读取文件内容
+        content = file.read()
+    global _config
+    _config = json.loads(content)
+    print("before _config:", _config)
+    for item in _config['targetList']:
+        venue_detail = [f"{item['court']}---{venue}#" for venue in item['venue']]
+        item['venue_detail'] = venue_detail
+        date_detail = []
+        # 获取当前日期
+        today = datetime.now()
+        # 计算今天是周几（0是周一，6是周日）
+        weekday = today.weekday()
+        # 如果今天是周一（0），则直接获取日期，否则向后计算到周一
+        if weekday == 0:  # 周一
+            this_monday = today
+        else:
+            this_monday = today - timedelta(days=weekday)
+        print("This Monday's date:", this_monday.strftime("%Y-%m-%d"))
+        for offset in item['offset']:
+            for week in item['week']:
+                next_date = this_monday + timedelta(days=((week - 2 - this_monday.weekday())) % 7 + 1 + offset * 7)
+                date_detail.append(next_date.strftime("%Y-%m-%d"))
+                print(next_date.strftime("%Y-%m-%d"))
+        item['date_detail'] = date_detail
+    print("after _config:", _config)
+
+
+def get_target_date():
+    # 获取当前日期（假设今天是周一）
+    today = datetime.now()
+    # 由于今天是周一，我们可以直接使用today作为基准
+    monday = today
+
+    # 计算下个周二的日期
+    next_tuesday = monday + timedelta(days=(1 - monday.weekday()) % 7 + 1)
+
+    # 计算下个周四的日期
+    next_thursday = monday + timedelta(days=(3 - monday.weekday()) % 7 + 1)
+
+    # 计算下个周六的日期
+    next_saturday = monday + timedelta(days=(5 - monday.weekday()) % 7 + 1)
+
+    # 打印结果
+    print("Next Tuesday's date:", next_tuesday.strftime("%Y-%m-%d"))
+    print("Next Thursday's date:", next_thursday.strftime("%Y-%m-%d"))
+    print("Next Saturday's date:", next_saturday.strftime("%Y-%m-%d"))
+    pass
 
 
 def start_job():
@@ -222,3 +299,5 @@ if __name__ == '__main__':
     # start_job()
     detect_sku()
     # init()
+    # parse_config()
+    # get_target_date()

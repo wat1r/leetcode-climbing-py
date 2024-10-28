@@ -179,6 +179,9 @@ def get_random_sku_slice(collect_info: list):
             return candidates
 
 
+
+
+
 def start_job():
     print("start_job_core start")
     start_job_core()
