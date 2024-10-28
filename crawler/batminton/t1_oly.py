@@ -278,28 +278,6 @@ def get_request_id(request_body: str):
     return request_id
 
 
-def get_target_date():
-    # 获取当前日期（假设今天是周一）
-    today = datetime.now()
-    # 由于今天是周一，我们可以直接使用today作为基准
-    monday = today
-
-    # 计算下个周二的日期
-    next_tuesday = monday + timedelta(days=(1 - monday.weekday()) % 7 + 1)
-
-    # 计算下个周四的日期
-    next_thursday = monday + timedelta(days=(3 - monday.weekday()) % 7 + 1)
-
-    # 计算下个周六的日期
-    next_saturday = monday + timedelta(days=(5 - monday.weekday()) % 7 + 1)
-
-    # 打印结果
-    print("Next Tuesday's date:", next_tuesday.strftime("%Y-%m-%d"))
-    print("Next Thursday's date:", next_thursday.strftime("%Y-%m-%d"))
-    print("Next Saturday's date:", next_saturday.strftime("%Y-%m-%d"))
-    pass
-
-
 def start_job():
     print("start_job_core start")
     start_job_core()
