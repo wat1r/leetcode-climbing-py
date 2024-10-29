@@ -212,7 +212,7 @@ def cube_collect_info(collect_info: list):
 
 def parse_config():
     if len(sys.argv) < 2:
-        print("parameters are leaking,exit....")
+        print("using default config path...")
         config_path = r"D:\Dev\Data\input\badminton\config.json"
         # sys.exit(1)
     else:
