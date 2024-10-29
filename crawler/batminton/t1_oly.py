@@ -32,20 +32,9 @@ split_symbol = "@#"
 
 
 def detect_sku(time_date: str = None):
-    #
-    if not time_date:
-        time_date = build_date(interval=6)
+    # 初始化 _config
     init()
-    # 替换
-    ready_to_request = False
     global _config
-    for target in _config['targetList']:
-        if time_date in target['date_detail']:
-            ready_to_request = True
-            break
-    if not ready_to_request:
-        print(f"max {time_date} is not candidates ,return.")
-        return
     auth_token = _config['user_info']["auth_token"] if "user_info" in _config and "auth_token" in _config[
         'user_info'] and _config['user_info'][
                                                            "auth_token"] != "" else "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTk4ODIxOSwiaWQiOiIxNzI5OTg4MjE5MDE1NzMiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.zzamXD2BJ0vdpkUbdtsXkTgP7DOsUX4chPTTWW8vVCg"
@@ -69,15 +58,28 @@ def detect_sku(time_date: str = None):
     # 替换
     for target in _config['targetList']:
         for time_date in target['date_detail']:
+            limit = target['limit']
+            limit_date = build_date(interval=limit)
+            if limit_date < target['date_detail'][0]:
+                print(
+                    f"field:{target['field']},current date:{datetime.now().strftime('%Y-%m-%d')},limit_date:{limit_date},limit:{target['limit']}--->skip")
+                break
             print(f"current request date:{time_date}")
-            api_request(time_date=time_date, request_id=request_id, headers=headers)
+            business_id = target['business_id']
+            stadium_id = target['stadium_id']
+            group_id = target['group_id']
+            field = target['field']
+            #     return business_id, stadium_id
+            api_request(time_date=time_date, request_id=request_id, headers=headers, business_id=business_id,
+                        stadium_id=stadium_id, group_id=group_id, field=field)
 
 
-def api_request(time_date: str, request_id: str, headers: dict):
+def api_request(time_date: str, request_id: str, headers: dict, business_id: int, stadium_id: int, group_id: int,
+                field: str = "奥体中心"):
     data = {
-        'business_id': '10000935',
-        'stadium_id': '11733',
-        'ground_id': '11733001',
+        'business_id': str(business_id),
+        'stadium_id': str(stadium_id),
+        'ground_id': str(group_id),
         'time_date': time_date,
         'request_id': request_id,  # 待替换
     }
@@ -113,16 +115,16 @@ def api_request(time_date: str, request_id: str, headers: dict):
     print("----cube_info:", cube_info)
     if cube_info is not None and len(cube_info) > 0:
         content = """
-        ### **奥体中心**
-        """
+        ### **%s**
+        """ % field
 
         # 提交订单，订单只有8分钟的支付时间
-        sku_body = build_sku_slice(get_random_sku_slice(cube_info))
-        print("sku_body->", sku_body)
-        data = f"business_id=10000935&stadium_id=11733&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
-
-        response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data, verify=False)
-        print("order create response--->", response.json())
+        # sku_body = build_sku_slice(get_random_sku_slice(cube_info))
+        # print("sku_body->", sku_body)
+        # data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
+        # print("data->", data)
+        # response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data, verify=False)
+        # print("order create response--->", response.json())
 
         for item in cube_info:
             v = item.split(split_symbol)
@@ -148,14 +150,6 @@ def create_warn_content(field: str = "", match: str = "", field_status: str = ""
 
 
 def init():
-    # today = datetime.now()
-    # # 计算6天后的时间
-    # six_days_later = today + timedelta(days=6)
-    # formatted_six_days_later = six_days_later.strftime('%Y-%m-%d')
-    # global target_list
-    # # target_list['date'].clear()
-    # target_list['date'].append(formatted_six_days_later)
-    # print(f"target_list---->{target_list}")
     parse_config()
 
 
@@ -175,7 +169,7 @@ def send_weixin(content):
     res = requests.post(webHookUrl, data=data, headers=headers, verify=False)  # 直接一句post就可以实现通过机器人在群聊里发消息
 
 
-def build_date(interval: int):
+def build_date(interval: int = 6):
     current_date = datetime.now()
     interval_days = timedelta(days=interval)
     future_date = current_date + interval_days
@@ -241,7 +235,15 @@ def parse_config():
         _config['user_info']['auth_token'] = _response_content['auth_token']
         _config['user_info']['request_id'] = get_request_id(_response_content['request_body'])
     for item in _config['targetList']:
-        venue_detail = [f"{item['court']}---{venue}#" for venue in item['venue']]
+        field = item['field']
+        business_id, stadium_id, group_id = get_basic_info(field=field)
+        item['business_id'] = business_id
+        item['stadium_id'] = stadium_id
+        item['group_id'] = group_id
+        limit = get_limit_days(field=field)
+        item['limit'] = limit
+        _symbol = get_tail_symbol(field=field)
+        venue_detail = [f"{item['court']}{_symbol[0]}{venue}{_symbol[1]}" for venue in item['venue']]
         item['venue_detail'] = venue_detail
         date_detail = []
         # 获取当前日期
@@ -276,6 +278,31 @@ def get_request_id(request_body: str):
     # 获取request_id的值
     request_id = params_dict.get('request_id', None)
     return request_id
+
+
+def get_limit_days(field: str):
+    if field == "奥体中心":
+        return 6
+    elif field == "南部市民中心":
+        return 2
+    return 6
+
+
+def get_basic_info(field: str):
+    business_id, stadium_id, ground_id = 10000935, 11733, 11733001
+    if field == "奥体中心":
+        business_id, stadium_id, ground_id = 10000935, 11733, 11733001
+    elif field == "南部市民中心":
+        business_id, stadium_id, ground_id = 10000785, 11501, 11501001
+    return business_id, stadium_id, ground_id
+
+
+def get_tail_symbol(field: str):
+    if field == "奥体中心":
+        return "---", "#"
+    elif field == "南部市民中心":
+        return "--", "号"
+    return "---", "#"
 
 
 def start_job():
