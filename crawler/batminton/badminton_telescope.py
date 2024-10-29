@@ -33,6 +33,7 @@ split_symbol = "@#"
 
 def detect_sku(time_date: str = None):
     # 初始化 _config
+    print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M')}---------------")
     init()
     global _config
     auth_token = _config['user_info']["auth_token"] if "user_info" in _config and "auth_token" in _config[
