@@ -119,12 +119,12 @@ def api_request(time_date: str, request_id: str, headers: dict, business_id: int
         """ % field
 
         # 提交订单，订单只有8分钟的支付时间
-        # sku_body = build_sku_slice(get_random_sku_slice(cube_info))
-        # print("sku_body->", sku_body)
-        # data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
-        # print("data->", data)
-        # response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data, verify=False)
-        # print("order create response--->", response.json())
+        sku_body = build_sku_slice(get_random_sku_slice(cube_info))
+        print("sku_body->", sku_body)
+        data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
+        print("data->", data)
+        response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data, verify=False)
+        print("order create response--->", response.json())
 
         for item in cube_info:
             v = item.split(split_symbol)
