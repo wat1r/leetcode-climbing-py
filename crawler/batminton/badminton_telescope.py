@@ -212,7 +212,7 @@ def cube_collect_info(collect_info: list):
 
 def parse_config():
     if len(sys.argv) < 2:
-        print("Usage: python script.py <arg1> [<arg2>...]")
+        print("parameters are leaking,exit....")
         sys.exit(1)
     config_path = sys.argv[1]
     # 打印所有参数
@@ -224,7 +224,6 @@ def parse_config():
     with open(directory + "\\response.txt", 'r', encoding='utf-8') as file:
         # 读取所有行到一个列表中
         lines = file.readlines()
-    # "D:\Dev\Data\input\batminton\response.txt"
     response_content = lines[-1] if lines else None
     if response_content:
         _response_content = json.loads(response_content)
@@ -333,3 +332,5 @@ if __name__ == '__main__':
     # init()
     # parse_config()
     # get_target_date()
+
+    # D:\Dev\Data\input\badminton\config.json
