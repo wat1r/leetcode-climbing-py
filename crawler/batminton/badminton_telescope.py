@@ -57,6 +57,7 @@ def detect_sku(time_date: str = None):
     }
     # 替换
     for target in _config['targetList']:
+        print(f"--------monitor target:{target}")
         for time_date in target['date_detail']:
             limit = target['limit']
             limit_date = build_date(interval=limit)
