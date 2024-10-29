@@ -65,17 +65,15 @@ def detect_sku(time_date: str = None):
                     f"field:{target['field']},current date:{datetime.now().strftime('%Y-%m-%d')},limit_date:{limit_date},limit:{target['limit']}--->skip")
                 break
             print(f"current request date:{time_date}")
-            business_id = target['business_id']
-            stadium_id = target['stadium_id']
-            group_id = target['group_id']
-            field = target['field']
+
             #     return business_id, stadium_id
-            api_request(time_date=time_date, request_id=request_id, headers=headers, business_id=business_id,
-                        stadium_id=stadium_id, group_id=group_id, field=field)
+            api_request(time_date=time_date, request_id=request_id, headers=headers, target=target)
 
 
-def api_request(time_date: str, request_id: str, headers: dict, business_id: int, stadium_id: int, group_id: int,
-                field: str = "奥体中心"):
+def api_request(time_date: str, request_id: str, headers: dict, target: dict):
+    business_id, stadium_id, group_id, field, duration = target['business_id'], target['stadium_id'], target[
+        'group_id'], target[
+        'field'], target['duration'] if 'duration' in target else 2
     data = {
         'business_id': str(business_id),
         'stadium_id': str(stadium_id),
@@ -119,7 +117,7 @@ def api_request(time_date: str, request_id: str, headers: dict, business_id: int
         """ % field
 
         # 提交订单，订单只有8分钟的支付时间
-        sku_body = build_sku_slice(get_random_sku_slice(cube_info))
+        sku_body = build_sku_slice(get_random_sku_slice(collect_info=cube_info, duration=duration))
         print("sku_body->", sku_body)
         data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
         print("data->", data)
@@ -189,13 +187,15 @@ def build_sku_slice(candidates: list):
     return sku_slice
 
 
-def get_random_sku_slice(collect_info: list):
+def get_random_sku_slice(collect_info: list, duration: int = 2):
     candidates = []
     for item in collect_info:
         candidates.append(item.split(split_symbol)[-1])
-        if len(candidates) == 2:
+        global _config
+        if len(candidates) == duration:
             print("candidates->", candidates)
             return candidates
+    return candidates
 
 
 def cube_collect_info(collect_info: list):
