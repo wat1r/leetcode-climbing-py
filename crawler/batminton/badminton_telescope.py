@@ -236,7 +236,6 @@ def parse_config():
     if len(sys.argv) < 2:
         print("using default config path...")
         config_path = r"D:\Dev\Data\input\badminton\config.json"
-        # sys.exit(1)
     else:
         config_path = sys.argv[1]
     # 打印所有参数
@@ -248,6 +247,9 @@ def parse_config():
     with open(directory + "\\response.txt", 'r', encoding='utf-8') as file:
         # 读取所有行到一个列表中
         lines = file.readlines()
+    if not lines or len(lines) == 0:
+        print("response.txt is empty,fill the file first.")
+        sys.exit(1)
     response_content = lines[-1] if lines else None
     if response_content:
         _response_content = json.loads(response_content)
