@@ -121,13 +121,16 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
         if DEBUG_MODE is None or not DEBUG_MODE:
             # 提交订单，订单只有8分钟的支付时间
             sku_body = build_sku_slice(get_random_sku_slice(collect_info=cube_info, duration=duration))
-            print("sku_body->", sku_body)
-            data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
-            print("data->", data)
-            response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data,
-                                     verify=False)
-            print("order create response--->", response.json())
-
+            print(f"sku_body->{sku_body}")
+            if sku_body and sku_body != "":
+                data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
+                print("data->", data)
+                response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data,
+                                         verify=False)
+                print("order create response--->", response.json())
+            else:
+                print("==========================没有可选的场次,无法提交预定订单")
+                sys.exit(1)
         for item in cube_info:
             v = item.split(split_symbol)
             content += create_warn_content(field=v[0], match=v[1], field_status=v[2])
@@ -229,8 +232,8 @@ def build_date(interval: int = 6):
 
 
 def build_sku_slice(candidates: list):
-    if not candidates or len(candidates) == 0:
-        return
+    if not candidates or len(candidates) <= 1:
+        return ""
     sku_slice = ""
     for i in range(0, len(candidates)):
         sku_slice += candidates[i] + "%3A1"
@@ -241,6 +244,9 @@ def build_sku_slice(candidates: list):
 
 
 def get_random_sku_slice(collect_info: list, duration: int = 2):
+    if collect_info and len(collect_info) <= 1:
+        print("==========================当前的场次不够，无法支付")
+        return []
     candidates = []
     for item in collect_info:
         candidates.append(item.split(split_symbol)[-1])
@@ -265,11 +271,18 @@ def cube_collect_info(collect_info: list, target: dict):
 
 def sort_cube_info(raw_cube_info: [], target: dict):
     cube_info = []
+    cube_map = {}
     for v_d in target['venue_detail']:
         for raw in raw_cube_info:
             arr = raw.split(split_symbol)
             if v_d == arr[0].split("_")[1]:
-                cube_info.append(raw)
+                match = arr[1]
+                cube_list = cube_map.get(match, [])
+                cube_list.append(raw)
+                cube_map.setdefault(match, cube_list)
+    for match, cube_list in cube_map.items():
+        if len(cube_list) > 0:
+            cube_info.append(cube_list[0])
     return cube_info
 
 
@@ -394,5 +407,5 @@ def start_job_core():
 
 
 if __name__ == '__main__':
-    start_job()
-    # detect_sku(debug_mode=True)
+    # start_job()
+    detect_sku(debug_mode=False)
