@@ -8,6 +8,8 @@ import requests
 import urllib3
 from apscheduler.schedulers.background import BackgroundScheduler
 
+# config path -> D:\Dev\Data\input\badminton\config.json
+
 # 苏州新时代文体联盟
 
 # 关掉不安全证书的警告
@@ -31,6 +33,8 @@ warning_info = dict()
 split_symbol = "@#"
 
 DEBUG_MODE = False
+
+HEADERS = None
 
 
 def detect_sku(debug_mode: bool = False):
@@ -60,7 +64,10 @@ def detect_sku(debug_mode: bool = False):
         # 'Accept-Encoding': 'gzip, deflate, br',
         'Accept-Language': 'zh-CN,zh;q=0.9',
     }
+    global HEADERS
+    HEADERS = headers
     # 替换
+    has_order = False
     for target in _config['targetList']:
         print(f"--------monitor target:{target}")
         for time_date in target['date_detail']:
@@ -71,9 +78,12 @@ def detect_sku(debug_mode: bool = False):
                     f"field:{target['field']},current date:{datetime.now().strftime('%Y-%m-%d')},limit_date:{limit_date},limit:{target['limit']}--->skip")
                 break
             print(f"current request date:{time_date}")
-
-            #     return business_id, stadium_id
+            has_order = api_order_list(request_id=request_id, target=target)
+            if has_order:
+                break
             api_request(time_date=time_date, request_id=request_id, headers=headers, target=target)
+        if has_order:
+            break
 
 
 def api_request(time_date: str, request_id: str, headers: dict, target: dict):
@@ -94,6 +104,8 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
     # print(f"A---result--->{result}")
     if "code" not in result or result['code'] != 200:
         print(f"B---result--->{result}")
+        # B---result--->{'code': 40101, 'data': None, 'message': '请重新登陆'}
+        print(f"==========================:message:{result['message']},code:{result['code']}")
         return
     collect_info = []
     try:
@@ -127,9 +139,38 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
             warning_info[today] += 1
             print(f"warning_info:{warning_info}")
             if warning_info[today] >= 1:
-                print("=======================恭喜你，去我的订单付款吧=======================")
+                if DEBUG_MODE is None or not DEBUG_MODE:
+                    print("=======================恭喜你，去我的订单付款吧=======================")
                 print("warning_info has already send 1 times,quit")
                 sys.exit(1)
+
+
+def api_order_list(request_id: str, target: dict):
+    business_id = target['business_id']
+    data = {
+        'business_id': str(business_id),
+        'stadium_id': '0',
+        'order_from': '2',
+        'order_status': '-1',
+        'sort': '-1',
+        'page': '1',
+        'size': '8',
+        'request_id': request_id,
+    }
+    try:
+        response = requests.post('https://api.wesais.com/shop/order/list', headers=HEADERS, data=data, verify=False)
+        result = response.json()
+        print("order list response--->", result)
+        if "code" in result and result['code'] == 200:
+            if len(result['data']['list']) > 0:
+                first_order = result['data']['list'][0]
+                if ("order_status_str" in first_order and first_order["order_status_str"] == "未支付") or (
+                        "order_status" in first_order and first_order['order_status'] == 0):
+                    print("=======================我的订单有未支付订单，去支付，付款时间只有8分钟")
+                    return True
+    except Exception as ex:
+        print(f"api_order_list exception--->{ex}")
+    return False
 
 
 def dig_sku_list(collect_info, result, time_date):
@@ -354,9 +395,4 @@ def start_job_core():
 
 if __name__ == '__main__':
     start_job()
-    # detect_sku(debug_mode=True)
-    # init()
-    # parse_config()
-    # get_target_date()
-
-    # D:\Dev\Data\input\badminton\config.json
+    detect_sku(debug_mode=True)
