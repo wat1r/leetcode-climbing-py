@@ -351,8 +351,8 @@ def start_job_core():
 
 
 if __name__ == '__main__':
-    # start_job()
-    detect_sku(debug_mode=True)
+    start_job()
+    # detect_sku(debug_mode=True)
     # init()
     # parse_config()
     # get_target_date()
