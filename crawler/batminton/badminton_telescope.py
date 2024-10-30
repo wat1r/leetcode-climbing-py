@@ -30,8 +30,12 @@ warning_info = dict()
 
 split_symbol = "@#"
 
+DEBUG_MODE = False
 
-def detect_sku(time_date: str = None):
+
+def detect_sku(debug_mode: bool = False):
+    global DEBUG_MODE
+    DEBUG_MODE = debug_mode
     # 初始化 _config
     print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M')}---------------")
     init()
@@ -93,38 +97,24 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
         return
     collect_info = []
     try:
-        sku_list = result['data']['skuList']
-        for sku in sku_list:
-            for sku_item in sku:
-                for s in sku_item:
-                    global _config
-                    for target in _config['targetList']:
-                        if time_date in target['date_detail']:
-                            if not s['is_lock'] and s['time_str'] in target['match']:
-                                if s['is_lock'] is not None and not s['is_lock']:
-                                    collect_info.append(
-                                        time_date + "_" + s['sku_name'].replace(" ", "") + split_symbol + s[
-                                            'time_str'] + split_symbol + (
-                                            "已定" if s[
-                                                'is_lock'] else "空闲") + split_symbol + s['sku'])
-                                # print(s['sku_name'].replace(" ", "") + "场次:" + time_date + " " + s['time_str'] + (
-                                #     "已定" if s['is_lock'] else "空闲"))
+        dig_sku_list(collect_info, result, time_date)
     except Exception as ex:
         print(f"detect_sku--->{ex}")
-    cube_info = cube_collect_info(collect_info)
+    cube_info = cube_collect_info(collect_info=collect_info, target=target)
     print("----cube_info:", cube_info)
     if cube_info is not None and len(cube_info) > 0:
         content = """
         ### **%s**
         """ % field
-
-        # 提交订单，订单只有8分钟的支付时间
-        sku_body = build_sku_slice(get_random_sku_slice(collect_info=cube_info, duration=duration))
-        print("sku_body->", sku_body)
-        data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
-        print("data->", data)
-        response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data, verify=False)
-        print("order create response--->", response.json())
+        if DEBUG_MODE is None or not DEBUG_MODE:
+            # 提交订单，订单只有8分钟的支付时间
+            sku_body = build_sku_slice(get_random_sku_slice(collect_info=cube_info, duration=duration))
+            print("sku_body->", sku_body)
+            data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
+            print("data->", data)
+            response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data,
+                                     verify=False)
+            print("order create response--->", response.json())
 
         for item in cube_info:
             v = item.split(split_symbol)
@@ -136,9 +126,29 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
                 warning_info[today] = 0
             warning_info[today] += 1
             print(f"warning_info:{warning_info}")
-            if warning_info[today] >= 3:
-                print("warning_info has already send 3 times,quit")
+            if warning_info[today] >= 1:
+                print("=======================恭喜你，去我的订单付款吧=======================")
+                print("warning_info has already send 1 times,quit")
                 sys.exit(1)
+
+
+def dig_sku_list(collect_info, result, time_date):
+    sku_list = result['data']['skuList']
+    for sku in sku_list:
+        for sku_item in sku:
+            for s in sku_item:
+                global _config
+                for target in _config['targetList']:
+                    if time_date in target['date_detail']:
+                        if not s['is_lock'] and s['time_str'] in target['match']:
+                            if s['is_lock'] is not None and not s['is_lock']:
+                                collect_info.append(
+                                    time_date + "_" + s['sku_name'].replace(" ", "") + split_symbol + s[
+                                        'time_str'] + split_symbol + (
+                                        "已定" if s[
+                                            'is_lock'] else "空闲") + split_symbol + s['sku'])
+                            # print(s['sku_name'].replace(" ", "") + "场次:" + time_date + " " + s['time_str'] + (
+                            #     "已定" if s['is_lock'] else "空闲"))
 
 
 def create_warn_content(field: str = "", match: str = "", field_status: str = ""):
@@ -200,15 +210,25 @@ def get_random_sku_slice(collect_info: list, duration: int = 2):
     return candidates
 
 
-def cube_collect_info(collect_info: list):
-    cube_info = []
+def cube_collect_info(collect_info: list, target: dict):
+    raw_cube_info = []
     for target in _config['targetList']:
         venue_detail = target['venue_detail']
         # court = item['court']
         for candidate in collect_info:
             arr = candidate.split(split_symbol)
             if arr[0].split("_")[1] in venue_detail:
-                cube_info.append(candidate)
+                raw_cube_info.append(candidate)
+    return sort_cube_info(raw_cube_info=raw_cube_info, target=target)
+
+
+def sort_cube_info(raw_cube_info: [], target: dict):
+    cube_info = []
+    for v_d in target['venue_detail']:
+        for raw in raw_cube_info:
+            arr = raw.split(split_symbol)
+            if v_d == arr[0].split("_")[1]:
+                cube_info.append(raw)
     return cube_info
 
 
@@ -331,8 +351,8 @@ def start_job_core():
 
 
 if __name__ == '__main__':
-    start_job()
-    # detect_sku()
+    # start_job()
+    detect_sku(debug_mode=True)
     # init()
     # parse_config()
     # get_target_date()
