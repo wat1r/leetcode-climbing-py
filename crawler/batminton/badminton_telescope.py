@@ -381,7 +381,7 @@ def start_job_core():
     # 创建后台调度器
     scheduler = BackgroundScheduler()
     # 添加任务，interval参数表示间隔时间，单位为秒
-    scheduler.add_job(detect_sku, 'interval', seconds=60 * 1)
+    scheduler.add_job(detect_sku, 'interval', seconds=60 * 1, next_run_time=datetime.now())
     # 启动调度器
     scheduler.start()
     # 为了防止程序退出，主线程在这里等待
