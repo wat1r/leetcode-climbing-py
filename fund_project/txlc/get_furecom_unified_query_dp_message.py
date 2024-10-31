@@ -3,6 +3,8 @@ import json
 
 import mitmproxy.http as http
 from mitmproxy import ctx
+from urllib.parse import urlparse, parse_qs
+
 
 
 class HTTPRecordModifier:
@@ -47,6 +49,13 @@ class HTTPRecordModifier:
 
 class Test:
 
+    def check_field_in_url(self, url, key):
+        # 解析URL
+        parsed_url = urlparse(url)
+        # 获取查询字符串部分
+        query_components = parse_qs(parsed_url.query)
+        # 检查字段是否存在
+        return key in query_components
 
     def response(self, flow: http.HTTPFlow):
         current_date = datetime.datetime.now().strftime('%Y%m%d')
@@ -54,13 +63,13 @@ class Test:
         Event for handling response before sending it back to the client
         """
         # 这里编写我们的 mock 逻辑代码
-        breakpoint_url = "https://www.tencentwm.com/"
+        breakpoint_url = "www.tencentwm.com/"
         url = flow.request.pretty_url
-        # print("================url->", url)
         if str(url).__contains__(breakpoint_url):
+            print("================url->", url)
             cookies = flow.request.cookies
             print("cookies:", cookies)
-            self.append_data(f"./{current_date}_cookies", str(cookies)+"\n")
+            self.append_data(f"./{current_date}_cookies", str(cookies) + "\n")
             response_content = json.loads(flow.response.content.decode("utf-8"))
             print("=========response_content", response_content)
             response_content['total'] = 20
@@ -81,7 +90,6 @@ class Test:
         except IOError as e:
             print(f"An error occurred while appending to the file: {e}")
 
-    
 
 addons = [
     Test()

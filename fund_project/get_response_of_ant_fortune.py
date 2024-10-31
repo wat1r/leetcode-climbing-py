@@ -1,4 +1,3 @@
-import datetime
 import json
 
 import mitmproxy.http as http
@@ -47,25 +46,32 @@ class HTTPRecordModifier:
 
 class Test:
 
-
     def response(self, flow: http.HTTPFlow):
-        current_date = datetime.datetime.now().strftime('%Y%m%d')
         """
         Event for handling response before sending it back to the client
         """
         # 这里编写我们的 mock 逻辑代码
-        breakpoint_url = "https://www.tencentwm.com/"
+        breakpoint_url1 = "alipayobjects.com"
+        breakpoint_url2 = "alipay.com"
         url = flow.request.pretty_url
-        # print("================url->", url)
-        if str(url).__contains__(breakpoint_url):
-            cookies = flow.request.cookies
-            print("cookies:", cookies)
-            self.append_data(f"./{current_date}_cookies", str(cookies)+"\n")
-            response_content = json.loads(flow.response.content.decode("utf-8"))
-            print("=========response_content", response_content)
-            response_content['total'] = 20
-            new_response = HTTPRecordModifier(flow)
-            print("new_response", new_response)
+        print("================url->", url)
+        if str(url).__contains__(breakpoint_url1) or str(url).__contains__(breakpoint_url2):
+            response_data = flow.response
+            response_header = response_data.headers
+            content_type = response_header['Content-Type']
+            if 'image' in content_type:
+                print('这里返回的是图片')
+            else:
+                print('content_type---------------->', content_type)
+                print('code------------>', response_data.status_code)
+                print('res_data-------------------->', response_data.text)
+            # response_content = json.loads(flow.response.content.decode("utf-8"))
+            # print("=========response_content", response_content)
+            # response_content['total'] = 20
+            # resp = json.loads(flow.response.text)
+            # print("=========resp:", flow.response.text)
+            # new_response = HTTPRecordModifier(flow)
+            # print("=========new_response:", new_response)
             userinfo = {
                 # 这里放置上面抓包获取的用户信息格式
             }
@@ -74,14 +80,6 @@ class Test:
             #     response_content['users'].append(userinfo)
             # new_response.set_response_body(json.dumps(response_content))
 
-    def append_data(self, file_path, data):
-        try:
-            with open(file_path, 'a') as file:
-                file.write(data)
-        except IOError as e:
-            print(f"An error occurred while appending to the file: {e}")
-
-    
 
 addons = [
     Test()
