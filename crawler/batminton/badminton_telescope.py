@@ -130,7 +130,7 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
                 print("order create response--->", response.json())
             else:
                 print("==========================没有可选的场次,无法提交预定订单")
-                sys.exit(1)
+                return
         for item in cube_info:
             v = item.split(split_symbol)
             content += create_warn_content(field=v[0], match=v[1], field_status=v[2])
@@ -145,7 +145,7 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
                 if DEBUG_MODE is None or not DEBUG_MODE:
                     print("=======================恭喜你，去我的订单付款吧=======================")
                 print("warning_info has already send 1 times,quit")
-                sys.exit(1)
+                return
 
 
 def api_order_list(request_id: str, target: dict):
@@ -259,13 +259,12 @@ def get_random_sku_slice(collect_info: list, duration: int = 2):
 
 def cube_collect_info(collect_info: list, target: dict):
     raw_cube_info = []
-    for target in _config['targetList']:
-        venue_detail = target['venue_detail']
-        # court = item['court']
-        for candidate in collect_info:
-            arr = candidate.split(split_symbol)
-            if arr[0].split("_")[1] in venue_detail:
-                raw_cube_info.append(candidate)
+    venue_detail = target['venue_detail']
+    # court = item['court']
+    for candidate in collect_info:
+        arr = candidate.split(split_symbol)
+        if arr[0].split("_")[1] in venue_detail:
+            raw_cube_info.append(candidate)
     return sort_cube_info(raw_cube_info=raw_cube_info, target=target)
 
 
@@ -407,5 +406,5 @@ def start_job_core():
 
 
 if __name__ == '__main__':
-    # start_job()
-    detect_sku(debug_mode=False)
+    start_job()
+    # detect_sku(debug_mode=True)
