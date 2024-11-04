@@ -344,7 +344,7 @@ def fill_user_infos(directory: str):
     user_infos = []
     for dir_path, dir_names, file_names in os.walk(directory):
         for file_name in file_names:
-            if file_name.startswith("response"):
+            if file_name.startswith("response_"):
                 response_file_path = os.path.join(dir_path, file_name)
                 # 处理文件
                 print(response_file_path)
