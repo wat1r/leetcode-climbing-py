@@ -318,7 +318,10 @@ def parse_config():
         limit = get_limit_days(field=field)
         item['limit'] = limit
         _symbol = get_tail_symbol(field=field)
-        venue_detail = [f"{item['court']}{_symbol[0]}{venue}{_symbol[1]}" for venue in item['venue']]
+        _prefix = _symbol[1] if _symbol[2] == "PREFIX" else ""
+        _suffix = _symbol[1] if _symbol[2] == "SUFFIX" else ""
+        venue_detail = [
+            f"{item['court']}{_symbol[0]}{_prefix}{venue}{_suffix}" for venue in item['venue']]
         item['venue_detail'] = venue_detail
         date_detail = []
         # 获取当前日期
@@ -415,15 +418,19 @@ def get_basic_info(field: str):
         business_id, stadium_id, ground_id = 10000935, 11733, 11733001
     elif field == "南部市民中心":
         business_id, stadium_id, ground_id = 10000785, 11501, 11501001
+    elif field == "北部市民中心":
+        business_id, stadium_id, ground_id = 10000932, 11726, 11726001
     return business_id, stadium_id, ground_id
 
 
 def get_tail_symbol(field: str):
     if field == "奥体中心":
-        return "---", "#"
+        return "---", "#", "SUFFIX"
     elif field == "南部市民中心":
-        return "--", "号"
-    return "---", "#"
+        return "--", "号", "SUFFIX"
+    elif field == "北部市民中心":
+        return "--", "场地", "PREFIX"
+    return "---", "#", "SUFFIX"
 
 
 def start_job():
@@ -446,8 +453,10 @@ def start_job_core():
     except KeyboardInterrupt:
         # 关闭调度器
         scheduler.shutdown()
+
+
 # B---result--->{'code': 40101, 'data': None, 'message': '请重新登陆'}
 
 if __name__ == '__main__':
-    start_job()
-    # detect_sku(debug_mode=False)
+    # start_job()
+    detect_sku(debug_mode=False)

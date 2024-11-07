@@ -32,10 +32,10 @@ def connect():
     app = Application(backend='uia').connect(process=wechat_pid)
     we_chat_main_dialog = app.window(class_name='WeChatMainWndForPC')
 
-    print(we_chat_main_dialog.is_dialog)
+    # print(we_chat_main_dialog.is_dialog)
 
     # 给控件画个红色框便于看出是哪个
-    we_chat_main_dialog.draw_outline(colour='red')
+    # we_chat_main_dialog.draw_outline(colour='red')
 
     # list_data = we_chat_main_dialog.child_window(title="会话", control_type="List")
     # for item in list_data:
@@ -56,13 +56,28 @@ def connect():
     # 打印当前窗口的所有controller（控件和属性）
     # we_chat_main_dialog.print_control_identifiers(depth=None, filename=None)
     # 通过搜索，定位聊天
-    search_elem = we_chat_main_dialog.child_window(control_type='Edit', title='搜索')
+    # search_elem = we_chat_main_dialog.child_window(control_type='Edit', title='搜索')
     # search_elem = we_chat_main_dialog.child_window(control_type="UIA_EditControlTypeId (0xC354)", title="搜索")
-    search_elem.click_input()
-    search_elem.type_keys('^a').type_keys(chat_name)
-    time.sleep(1)
+    # search_elem.click_input()
+    # search_elem.type_keys('^a').type_keys(chat_name)
+    # time.sleep(1)
 
-    send_keys('{ENTER}')
+    # send_keys('{ENTER}')
+
+    # mini_program_panel = we_chat_main_dialog.child_window(control_type='Button', title='小程序面板')
+    # element_info = mini_program_panel.element_info
+    # print(type(element_info))
+    # print("window_text:", )
+    # print("rich_text:", element_info.rich_text)
+    # mini_program_panel.click()
+
+    chat_ = we_chat_main_dialog.child_window(control_type='Button', title='朋友圈')
+    element_info = chat_.element_info
+    print(type(element_info))
+    print("window_text:", )
+    print("rich_text:", element_info.rich_text)
+    chat_.click()
+    chat_.click()
 
     # 点击要发送消息的聊天
     # chat_list = we_chat_main_dialog.child_window(control_type='List', title='会话')
