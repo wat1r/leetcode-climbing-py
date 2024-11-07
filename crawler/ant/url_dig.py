@@ -9,7 +9,8 @@ url_pattern = re.compile(
 urls_set = set()
 
 
-with open(r'C:\Users\wangzhou\Downloads\20241031.log', 'r',encoding='utf-8') as file:
+# with open(r'C:\Users\wangzhou\Downloads\20241031.log', 'r',encoding='utf-8') as file:
+with open(r'D:\Dev\wat1r\bot-ant\raw\20241105.log', 'r',encoding='utf-8') as file:
     for line in file:
         matches = url_pattern.findall(line)
         for match in matches:
