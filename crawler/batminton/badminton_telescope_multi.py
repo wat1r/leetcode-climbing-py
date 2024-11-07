@@ -458,5 +458,5 @@ def start_job_core():
 # B---result--->{'code': 40101, 'data': None, 'message': '请重新登陆'}
 
 if __name__ == '__main__':
-    # start_job()
-    detect_sku(debug_mode=False)
+    start_job()
+    # detect_sku(debug_mode=True)

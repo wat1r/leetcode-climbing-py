@@ -1,7 +1,9 @@
 import os
 import time
+from datetime import datetime
 
 import psutil
+import pywinauto
 import win32con
 import win32gui
 import win32clipboard as wc
@@ -10,7 +12,6 @@ from pywinauto.application import Application
 from pywinauto.keyboard import send_keys
 
 import uiautomation as uia
-
 
 chat_name = "苏州新时代全民健身预订平台"  # 需要发送消息的聊天名称
 message = "测试"  # 需要发送的消息
@@ -23,6 +24,41 @@ def get_pid(p_name):
         p = psutil.Process(pid)
         if p_name in p.name():
             return pid
+
+
+def pids():
+    PID = 0
+    for proc in psutil.process_iter():
+        try:
+            pinfo = proc.as_dict(attrs=['pid', 'name', 'create_time'])
+        except psutil.NoSuchProcess:
+            pass
+        else:
+            dt_object = datetime.utcfromtimestamp(pinfo['create_time'])
+            pinfo['create_time_format'] = dt_object
+
+            print(f"pinfo->{pinfo}")
+            # print(pinfo['name'],pinfo['pid'])
+            if 'WeChat.exe' == pinfo['name']:
+                PID = pinfo['pid']
+
+
+def click(coords):
+    pywinauto.mouse.move((coords[0], coords[1]))
+    pywinauto.mouse.click(coords=(coords[0], coords[1]))
+
+
+def click_center(control, main_win, click_main=True):
+    coords = control.rectangle()
+    if click_main:
+        win_rect = main_win.rectangle()
+        x = (coords.left + coords.right) // 2 - win_rect.left
+        y = (coords.top + coords.bottom) // 2 - win_rect.top
+        main_win.click_input(coords=(x, y))
+    else:
+        win_rect = control.rectangle()
+        control.click_input(coords=((coords.left + coords.right) // 2 - win_rect.left,
+                                    (coords.top + coords.bottom) // 2 - win_rect.top))
 
 
 def connect():
@@ -56,13 +92,48 @@ def connect():
     # 打印当前窗口的所有controller（控件和属性）
     # we_chat_main_dialog.print_control_identifiers(depth=None, filename=None)
     # 通过搜索，定位聊天
-    # search_elem = we_chat_main_dialog.child_window(control_type='Edit', title='搜索')
+    search_elem = we_chat_main_dialog.child_window(control_type='Edit', title='搜索')
+
     # search_elem = we_chat_main_dialog.child_window(control_type="UIA_EditControlTypeId (0xC354)", title="搜索")
-    # search_elem.click_input()
-    # search_elem.type_keys('^a').type_keys(chat_name)
-    # time.sleep(1)
+    search_elem.click_input()
+    search_elem.type_keys('^a').type_keys(chat_name)
+    time.sleep(1)
 
     # send_keys('{ENTER}')
+    time.sleep(1)
+
+    # _t = we_chat_main_dialog.child_window(control_type='Window', title="文章、公众号、视频号等")
+    _t = we_chat_main_dialog.child_window(control_type='Text', title="搜索 " + chat_name)
+    # _t.click()
+    click_center(control=_t, main_win=we_chat_main_dialog)
+
+    pids()
+
+    # 创建一个Application对象，指定使用UIA后端
+    _new_app = Application(backend='uia')
+    # 连接到一个已经运行的应用程序
+    # 你可以通过窗口的标题来连接，这里的'your_app_title'需要替换成实际的窗口标题
+    new_win = _new_app.connect(title="微信", class_name="Chrome_WidgetWin_0")
+
+    # new_win_1 = new_win[1].child_window(control_type='Pane', found_index=0)
+    # new_win_1 = new_win[1]
+
+    # _new_tab = new_win.child_window(class_name='Chrome_RenderWidgetHostHWND')
+    _new_tab = new_win.child_window(title='苏州新时代全民健身预订平台 - 搜一搜')
+    # _new_tab = new_win.window(class_name='Chrome_WidgetWin_0')
+    # _new_tab = app.window(title=chat_name)
+    # _new_tab = app.top_window()
+    # 打印当前窗口的所有controller（控件和属性）
+    _new_tab.print_control_identifiers(depth=None, filename=None)
+    #  账号描述: 打造全国一流文体旅游综合运营商，助力苏州人民拥抱美好
+    # _o = _new_tab.children()[0].children()[0].children()[0].children()[0].children()[5].children()[0].children()[
+    #     0].children()[1]
+    # _o.click()
+    # _target = _new_tab.child_window(control_type='Button',
+    #                                title="苏州新时代全民健身预订平台 账号描述: 打造全国一流文体旅游综合运营商，助力苏州人民拥抱美好生活。 苏州新时代文体会展集团有限公司")
+    # click_center(control=_target, main_win=_new_tab)
+    # 苏州新时代全民健身预订平台 账号描述: 打造全国一流文体旅游综合运营商，助力苏州人民拥抱美好生活。 苏州新时代文体会展集团有限公司"
+    print("---------")
 
     # mini_program_panel = we_chat_main_dialog.child_window(control_type='Button', title='小程序面板')
     # element_info = mini_program_panel.element_info
@@ -71,13 +142,13 @@ def connect():
     # print("rich_text:", element_info.rich_text)
     # mini_program_panel.click()
 
-    chat_ = we_chat_main_dialog.child_window(control_type='Button', title='朋友圈')
-    element_info = chat_.element_info
-    print(type(element_info))
-    print("window_text:", )
-    print("rich_text:", element_info.rich_text)
-    chat_.click()
-    chat_.click()
+    # chat_ = we_chat_main_dialog.child_window(control_type='Button', title='朋友圈')
+    # element_info = chat_.element_info
+    # print(type(element_info))
+    # print("window_text:", )
+    # print("rich_text:", element_info.rich_text)
+    # chat_.click()
+    # chat_.click()
 
     # 点击要发送消息的聊天
     # chat_list = we_chat_main_dialog.child_window(control_type='List', title='会话')
