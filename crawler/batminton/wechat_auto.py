@@ -107,24 +107,46 @@ def connect():
     # _t.click()
     click_center(control=_t, main_win=we_chat_main_dialog)
 
-    pids()
+    # pids()
 
     # 创建一个Application对象，指定使用UIA后端
     _new_app = Application(backend='uia')
     # 连接到一个已经运行的应用程序
     # 你可以通过窗口的标题来连接，这里的'your_app_title'需要替换成实际的窗口标题
-    new_win = _new_app.connect(title="微信", class_name="Chrome_WidgetWin_0")
+    new_win = _new_app.connect(title="微信", class_name="Chrome_WidgetWin_0", control_type='Pane')
+    # 打印当前窗口的所有controller（控件和属性）
+    new_win.print_control_identifiers(depth=None, filename=None)
+    # _bt = new_win.child_window(title='苏州新时代全民健身预订平台 - 小程序').parent().parent().parent().children()[1]
+    # click_center(control=_bt, main_win=new_win)
+    #
+
+    # list_data = new_win.child_window(control_type="Pane")
+    # for item in list_data:
+    #     print(type(item))
+    #     element_info = item.element_info
+    #     print(type(element_info))
+    #     print("window_text:", )
+    #     print("rich_text:", element_info.rich_text)
+    #     print("name:", element_info.name)
+    #     print("visible:", element_info.visible)
+    #     print("rectangle:", element_info.rectangle)
+    #     print("class_name:", element_info.class_name)
+    #     print("enabled:", element_info.enabled)
+    #     print("parent:", element_info.parent)
+    #     print("children:", element_info.children())
+    #     print("iter_children:", element_info.iter_children())
 
     # new_win_1 = new_win[1].child_window(control_type='Pane', found_index=0)
     # new_win_1 = new_win[1]
 
     # _new_tab = new_win.child_window(class_name='Chrome_RenderWidgetHostHWND')
-    _new_tab = new_win.child_window(title='苏州新时代全民健身预订平台 - 搜一搜')
+
+    # _new_tab = new_win.child_window(title='苏州新时代全民健身预订平台 - 搜一搜')
     # _new_tab = new_win.window(class_name='Chrome_WidgetWin_0')
     # _new_tab = app.window(title=chat_name)
     # _new_tab = app.top_window()
     # 打印当前窗口的所有controller（控件和属性）
-    _new_tab.print_control_identifiers(depth=None, filename=None)
+    # _new_tab.print_control_identifiers(depth=None, filename=None)
     #  账号描述: 打造全国一流文体旅游综合运营商，助力苏州人民拥抱美好
     # _o = _new_tab.children()[0].children()[0].children()[0].children()[0].children()[5].children()[0].children()[
     #     0].children()[1]
