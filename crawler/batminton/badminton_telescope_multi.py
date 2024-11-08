@@ -127,7 +127,8 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
         """ % field
         if DEBUG_MODE is None or not DEBUG_MODE:
             # 提交订单，订单只有8分钟的支付时间
-            sku_body = build_sku_slice(get_random_sku_slice(collect_info=cube_info, duration=duration))
+            sku_body = build_sku_slice(get_random_sku_slice(collect_info=cube_info, duration=duration),
+                                       duration=duration)
             print(f"sku_body->{sku_body}")
             if sku_body and sku_body != "":
                 data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
@@ -238,8 +239,8 @@ def build_date(interval: int = 6):
     return formatted_future_date
 
 
-def build_sku_slice(candidates: list):
-    if not candidates or len(candidates) <= 1:
+def build_sku_slice(candidates: list, duration: int = 2):
+    if not candidates or len(candidates) < duration:
         return ""
     sku_slice = ""
     for i in range(0, len(candidates)):
