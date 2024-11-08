@@ -28,6 +28,12 @@ target_list = {
 
 }
 
+FILED_MAP = {
+    "FILED_OLYMPIC": "奥体中心",
+    "FILED_SOUTH": "南部市民中心",
+    "FILED_NORTH": "北部市民中心",
+}
+
 _config = None
 
 warning_info = dict()
@@ -393,10 +399,12 @@ def get_request_id(request_body: str):
 
 
 def get_limit_days(field: str):
-    if field == "奥体中心":
+    if field == FILED_MAP['FILED_OLYMPIC']:
         return 6
-    elif field == "南部市民中心":
+    elif field == FILED_MAP['FILED_SOUTH']:
         return 2
+    elif field == FILED_MAP['FILED_NORTH']:
+        return 6
     return 6
 
 
@@ -415,21 +423,21 @@ def get_auth_code(request_body: str):
 
 def get_basic_info(field: str):
     business_id, stadium_id, ground_id = 10000935, 11733, 11733001
-    if field == "奥体中心":
+    if field == FILED_MAP['FILED_OLYMPIC']:
         business_id, stadium_id, ground_id = 10000935, 11733, 11733001
-    elif field == "南部市民中心":
+    elif field == FILED_MAP['FILED_SOUTH']:
         business_id, stadium_id, ground_id = 10000785, 11501, 11501001
-    elif field == "北部市民中心":
+    elif field == FILED_MAP['FILED_NORTH']:
         business_id, stadium_id, ground_id = 10000932, 11726, 11726001
     return business_id, stadium_id, ground_id
 
 
 def get_tail_symbol(field: str):
-    if field == "奥体中心":
+    if field == FILED_MAP['FILED_OLYMPIC']:
         return "---", "#", "SUFFIX"
-    elif field == "南部市民中心":
+    elif field == FILED_MAP['FILED_SOUTH']:
         return "--", "号", "SUFFIX"
-    elif field == "北部市民中心":
+    elif field == FILED_MAP['FILED_NORTH']:
         return "--", "场地", "PREFIX"
     return "---", "#", "SUFFIX"
 
