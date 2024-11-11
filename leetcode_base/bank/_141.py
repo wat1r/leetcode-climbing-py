@@ -6,9 +6,9 @@ class Solution:
         if not head or not head.next: return False
         slow, fast = head, head.next
         while slow != fast:
-            if not fast or not fast.next: return False
+            if not fast or not fast.refresh_job: return False
             slow = slow.next
-            fast = fast.next.next
+            fast = fast.refresh_job.refresh_job
         return True
 
 

@@ -44,12 +44,17 @@ DEBUG_MODE = False
 
 HEADERS = None
 
+_scheduler = None
+_job = None
+
+DEFAULT_INTERVAL = 8
+
 
 def detect_sku(debug_mode: bool = False):
     global DEBUG_MODE
     DEBUG_MODE = debug_mode
     # 初始化 _config
-    print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M')}---------------")
+    print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M')} begin---------------")
     init()
     global _config
     if "user_infos" not in _config:
@@ -97,6 +102,8 @@ def detect_sku(debug_mode: bool = False):
                 api_request(time_date=time_date, request_id=request_id, headers=headers, target=target)
             if has_order:
                 break
+
+    print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M')} end---------------")
 
 
 def api_request(time_date: str, request_id: str, headers: dict, target: dict):
@@ -221,6 +228,20 @@ def init():
     parse_config()
 
 
+def refresh_job():
+    time.sleep(2)
+    global _scheduler
+    global _job
+    if _scheduler and _job:
+        next_interval = _config['trigger']['interval'] if _config and 'trigger' in _config and 'interval' in _config[
+            'trigger'] else DEFAULT_INTERVAL
+        next_run_time = datetime.now() + timedelta(minutes=next_interval)
+        # 更新下一次执行时间
+        print(
+            f"reschedule_job job_id:{_job.id}---->next_run_time:{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}->next_interval:{next_interval}")
+        _job = _scheduler.reschedule_job(_job.id, trigger='date', run_date=next_run_time)
+
+
 # warnContent = bytes(warnContent, 'utf-8').decode('unicode_escape')
 
 def send_weixin(content):
@@ -316,6 +337,8 @@ def parse_config():
     print("before _config:", _config)
     user_infos = fill_user_infos(directory)
     _config['user_infos'] = user_infos
+    # _config['trigger']['interval'] if _config and 'trigger' in _config and 'interval' in _config[
+    #     'trigger'] else DEFAULT_INTERVAL
     for item in _config['targetList']:
         field = item['field']
         business_id, stadium_id, group_id = get_basic_info(field=field)
@@ -450,18 +473,24 @@ def start_job():
 def start_job_core():
     print("------------------timer:start------------------")
     # 创建后台调度器
-    scheduler = BackgroundScheduler()
+    global _scheduler
+    _scheduler = BackgroundScheduler()
     # 添加任务，interval参数表示间隔时间，单位为秒
-    scheduler.add_job(detect_sku, 'interval', seconds=60 * 1, next_run_time=datetime.now())
+    _init_next_interval = 60 * DEFAULT_INTERVAL
+    next_run_time = datetime.now() + timedelta(seconds=_init_next_interval)
+    global _job
+    _job = _scheduler.add_job(detect_sku, 'interval', seconds=_init_next_interval, next_run_time=datetime.now())
+    print(f"add_job job_id:{_job.id}---->next_run_time:{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
     # 启动调度器
-    scheduler.start()
+    _scheduler.start()
     # 为了防止程序退出，主线程在这里等待
+    refresh_job()
     try:
         while True:
             time.sleep(2)
     except KeyboardInterrupt:
         # 关闭调度器
-        scheduler.shutdown()
+        _scheduler.shutdown()
 
 
 # B---result--->{'code': 40101, 'data': None, 'message': '请重新登陆'}

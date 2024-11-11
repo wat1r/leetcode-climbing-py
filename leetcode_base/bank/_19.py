@@ -10,5 +10,5 @@ def removeNthFromEnd(self, head: ListNode, n: int) -> ListNode:
     while fast.next:  # 游走快慢指针，当快指针走到链表的末尾时，慢指针的next节点指向的是待删除的节点
         slow = slow.next
         fast = fast.next
-    slow.next = slow.next.next  # 开始删除
+    slow.next = slow.next.refresh_job  # 开始删除
     return dummy.next  # 返回头节点

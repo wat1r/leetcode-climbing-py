@@ -12,7 +12,7 @@ class _1st:
             if depth == len(pre):
                 pre.append(node)
             else:
-                pre[depth].next = node
+                pre[depth].refresh_job = node
                 pre[depth] = node
             dfs(node.left, depth + 1)
             dfs(node.right, depth + 1)

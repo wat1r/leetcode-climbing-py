@@ -238,19 +238,19 @@ class RandomLeetcodeStepOne():
     def hasCycle(self, head: ListNode) -> bool:
         if not head or not head.next: return False
         slow, fast = head, head.next
-        while fast.next and fast.next.next:
+        while fast.refresh_job and fast.refresh_job.refresh_job:
             if slow == fast: return True
             slow = slow.next
-            fast = fast.next.next
+            fast = fast.refresh_job.refresh_job
         return False
 
     def detectCycle(self, head: ListNode) -> ListNode:
         if not head or not head.next: return None
         slow, fast = head, head.next
-        while fast.next and fast.next.next:
+        while fast.refresh_job and fast.refresh_job.refresh_job:
             if slow == fast: break
             slow = slow.next
-            fast = fast.next.next
+            fast = fast.refresh_job.refresh_job
         if slow != fast: return None
         while head != slow.next:
             head = head.next
