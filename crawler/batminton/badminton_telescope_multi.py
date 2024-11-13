@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import requests
 import urllib3
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
 
 # config path -> D:\Dev\Data\input\badminton\config.json
 
@@ -106,6 +107,7 @@ def detect_sku(debug_mode: bool = False):
     print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M')} end---------------")
 
 
+#     order create response---> {'code': 40004007, 'data': '', 'message': '提示:所选场地不支持在现阶段预订'}
 def api_request(time_date: str, request_id: str, headers: dict, target: dict):
     business_id, stadium_id, group_id, field, duration = target['business_id'], target['stadium_id'], target[
         'group_id'], target[
@@ -239,7 +241,7 @@ def refresh_job():
         # 更新下一次执行时间
         print(
             f"reschedule_job job_id:{_job.id}---->next_run_time:{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}->next_interval:{next_interval}")
-        _job = _scheduler.reschedule_job(_job.id, trigger='date', run_date=next_run_time)
+        _job = _scheduler.reschedule_job(_job.id, trigger=IntervalTrigger(minutes=next_interval))
 
 
 # warnContent = bytes(warnContent, 'utf-8').decode('unicode_escape')
@@ -483,8 +485,9 @@ def start_job_core():
     print(f"add_job job_id:{_job.id}---->next_run_time:{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
     # 启动调度器
     _scheduler.start()
-    # 为了防止程序退出，主线程在这里等待
+
     refresh_job()
+    # 为了防止程序退出，主线程在这里等待
     try:
         while True:
             time.sleep(2)
