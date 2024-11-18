@@ -55,7 +55,7 @@ def detect_sku(debug_mode: bool = False):
     global DEBUG_MODE
     DEBUG_MODE = debug_mode
     # 初始化 _config
-    print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M')} begin---------------")
+    print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} begin---------------")
     init()
     global _config
     if "user_infos" not in _config:
@@ -104,7 +104,7 @@ def detect_sku(debug_mode: bool = False):
             if has_order:
                 break
 
-    print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M')} end---------------")
+    print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} end---------------")
 
 
 #     order create response---> {'code': 40004007, 'data': '', 'message': '提示:所选场地不支持在现阶段预订'}
@@ -186,7 +186,7 @@ def api_order_list(request_id: str, target: dict):
     try:
         response = requests.post('https://api.wesais.com/shop/order/list', headers=HEADERS, data=data, verify=False)
         result = response.json()
-        print("order list response--->", result)
+        # print("order list response--->", result)
         if "code" in result and result['code'] == 200:
             if len(result['data']['list']) > 0:
                 first_order = result['data']['list'][0]
@@ -457,6 +457,21 @@ def get_basic_info(field: str):
     return business_id, stadium_id, ground_id
 
 
+def get_beijing_time(sync_time=True):
+    # 请求World Time API获取东八区（北京时间）的时间
+    response = requests.get('http://worldtimeapi.org/api/timezone/Asia/Shanghai')
+    if response.status_code == 200:
+        # 解析JSON响应
+        data = response.json()
+        # 获取当前时间并转换为datetime对象
+        beijing_time = datetime.fromisoformat(data['datetime'])
+        print('sync time beijing time:', beijing_time.strftime('%Y-%m-%d %H:%M:%S'))
+        return beijing_time
+    else:
+        print('Failed to get time:', response.status_code)
+        return None
+
+
 def get_tail_symbol(field: str):
     if field == FILED_MAP['FILED_OLYMPIC']:
         return "---", "#", "SUFFIX"
@@ -467,13 +482,24 @@ def get_tail_symbol(field: str):
     return "---", "#", "SUFFIX"
 
 
-def start_job():
+def start_job(debug_mode=False):
     print("start_job_core start")
-    start_job_core()
+    init()
+    run_dates = _config['trigger']['run_dates'] if _config and 'trigger' in _config and 'run_dates' in _config[
+        'trigger'] else []
+    sync_time = _config['trigger']['sync_time'] if _config and 'trigger' in _config and 'sync_time' in _config[
+        'trigger'] else "False"
+    if run_dates and len(run_dates) > 0:
+        run_dates = sorted(run_dates)
+        for run_date in run_dates:
+            start_job_core(run_date=run_date, debug_mode=debug_mode, sync_time=sync_time)
+    else:
+        start_job_core(run_date=None, debug_mode=debug_mode)
 
 
-def start_job_core():
-    print("------------------timer:start------------------")
+def start_job_core(run_date=None, debug_mode=False, sync_time=False):
+    print(
+        f"------------------timer:start:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}:sync_time:{get_beijing_time()}------------------")
     # 创建后台调度器
     global _scheduler
     _scheduler = BackgroundScheduler()
@@ -481,12 +507,21 @@ def start_job_core():
     _init_next_interval = 60 * DEFAULT_INTERVAL
     next_run_time = datetime.now() + timedelta(seconds=_init_next_interval)
     global _job
-    _job = _scheduler.add_job(detect_sku, 'interval', seconds=_init_next_interval, next_run_time=datetime.now())
-    print(f"add_job job_id:{_job.id}---->next_run_time:{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    if run_date is None:
+        _job = _scheduler.add_job(detect_sku, 'interval', seconds=_init_next_interval, next_run_time=datetime.now(),
+                                  args=(debug_mode,))
+        print(
+            f"[interval mode] add_job job_id:{_job.id}---->next_run_time:{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    else:
+        today = datetime.now().strftime('%Y-%m-%d')
+        actual_run_date = "%s %s" % (today, run_date)
+        _job = _scheduler.add_job(detect_sku, 'date', run_date=actual_run_date, args=(debug_mode,))
+        print(f"[date mode]add_job job_id:{_job.id}---->next_run_time:{actual_run_date}")
     # 启动调度器
     _scheduler.start()
 
-    refresh_job()
+    if run_date is None:
+        refresh_job()
     # 为了防止程序退出，主线程在这里等待
     try:
         while True:
@@ -500,5 +535,6 @@ def start_job_core():
 # 每日预定时长不能大于2小时
 
 if __name__ == '__main__':
-    start_job()
+    # start_job(debug_mode=True)
+    start_job(debug_mode=False)
     # detect_sku(debug_mode=True)
