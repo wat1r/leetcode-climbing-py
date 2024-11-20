@@ -147,33 +147,30 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
         content = """
         ### **%s**
         """ % field
-        if DEBUG_MODE is None or not DEBUG_MODE:
-            # 提交订单，订单只有8分钟的支付时间
-            # candidates = get_random_sku_slice(cube_map=cube_map, duration=duration)
-            i = 0
-            # for match, cube_list in cube_map.items():
-            if len(cube_map) < duration:
+        # 提交订单，订单只有8分钟的支付时间
+        if len(cube_map) < duration:
+            print(f"当前的场地时段数量小于时长->{duration}")
+            return
+        first_item_len = 0
+        for match, item in cube_map.items():
+            first_item_len = len(cube_map[match])
+            break
+        push_msg = True
+        candidates = []
+        msgs = []
+        for j in range(0, first_item_len):
+            candidates.clear()
+            msgs.clear()
+            for match, item in cube_map.items():
+                candidates.append(cube_map[match][j].split(split_symbol)[-1])
+                msgs.append(cube_map[match][j])
+            if len(candidates) < duration:
                 print(f"当前的场地时段数量小于时长->{duration}")
                 return
-            first_item_len = 0
-            for match, item in cube_map.items():
-                first_item_len = len(cube_map[match])
-                break
-            push_msg = True
-            candidates = []
-            msgs = []
-            for j in range(0, first_item_len):
-                candidates.clear()
-                msgs.clear()
-                for match, item in cube_map.items():
-                    candidates.append(cube_map[match][j].split(split_symbol)[-1])
-                    msgs.append(cube_map[match][j])
-                if len(candidates) < duration:
-                    print(f"当前的场地时段数量小于时长->{duration}")
-                    return
-                print(f"{threading.current_thread().name}----candidates:{candidates}")
-                sku_body = build_sku_slice(candidates=candidates, duration=duration)
-                print(f"sku_body->{sku_body}")
+            print(f"{threading.current_thread().name}----candidates:{candidates}")
+            sku_body = build_sku_slice(candidates=candidates, duration=duration)
+            print(f"sku_body->{sku_body}")
+            if DEBUG_MODE is None or not DEBUG_MODE:
                 if sku_body and sku_body != "":
                     data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
                     print("data->", data)
@@ -181,11 +178,12 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
                                              verify=False)
                     order_result = response.json()
 
-                    print("order create response--->", order_result)
+                    print(f"{threading.current_thread().name}---order create response--->{order_result}")
                     if "code" in order_result and order_result['code'] == 40004007:
                         if "message" in order_result and "提示" in order_result['message']:
                             print(f"{order_result}")
-                            if "被其他人占用" in order_result['message'] or "不能再次预订" in order_result['message']:
+                            if "被其他人占用" in order_result['message'] or "不能再次预订" in order_result[
+                                'message'] or "订场操作频繁" in order_result['message']:
                                 j += 1
                                 continue
                             else:
@@ -197,23 +195,24 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
                 else:
                     print("==========================没有可选的场次,无法提交预定订单")
                     return
-            if not push_msg:
+        if not push_msg:
+            return
+        for item in msgs:
+            v = item.split(split_symbol)
+            content += create_warn_content(field=v[0], match=v[1], field_status=v[2])
+        if content and content != "":
+            send_weixin(content)
+            today = datetime.now().strftime('%Y-%m-%d')
+            if today not in warning_info:
+                warning_info[today] = 0
+            warning_info[today] += 1
+            print(f"warning_info:{warning_info}")
+            if warning_info[today] >= 1:
+                if DEBUG_MODE is None or not DEBUG_MODE:
+                    print(
+                        f"{threading.current_thread().name}=======================恭喜你，去我的订单付款吧=======================")
+                print("warning_info has already send 1 times,quit")
                 return
-            for item in msgs:
-                v = item.split(split_symbol)
-                content += create_warn_content(field=v[0], match=v[1], field_status=v[2])
-            if content and content != "":
-                send_weixin(content)
-                today = datetime.now().strftime('%Y-%m-%d')
-                if today not in warning_info:
-                    warning_info[today] = 0
-                warning_info[today] += 1
-                print(f"warning_info:{warning_info}")
-                if warning_info[today] >= 1:
-                    if DEBUG_MODE is None or not DEBUG_MODE:
-                        print("=======================恭喜你，去我的订单付款吧=======================")
-                    print("warning_info has already send 1 times,quit")
-                    return
 
 
 def api_order_list(request_id: str, target: dict):
@@ -323,9 +322,10 @@ def build_sku_slice(candidates: list, duration: int = 2):
     if not candidates or len(candidates) < duration:
         return ""
     sku_slice = ""
-    for i in range(0, len(candidates)):
+    end = min(len(candidates), duration)
+    for i in range(0, end):
         sku_slice += candidates[i] + "%3A1"
-        if i != len(candidates) - 1:
+        if i != end - 1:
             sku_slice += "%2C"
     print("sku_slice:", sku_slice)
     return sku_slice
@@ -415,7 +415,7 @@ def parse_config():
         print("This Monday's date:", this_monday.strftime("%Y-%m-%d"))
         for offset in item['offset']:
             for week in item['week']:
-                next_date = this_monday + timedelta(days=((week - 2 - this_monday.weekday())) % 7 + 1 + offset * 7)
+                next_date = this_monday + timedelta(days=week - 1 + offset * 7)
                 date_detail.append(next_date.strftime("%Y-%m-%d"))
                 print(next_date.strftime("%Y-%m-%d"))
         item['date_detail'] = date_detail
@@ -472,7 +472,7 @@ def get_request_id(request_body: str):
 
 def get_limit_days(field: str):
     if field == FILED_MAP['FILED_OLYMPIC']:
-        return 9
+        return 6
     elif field == FILED_MAP['FILED_SOUTH']:
         return 2
     elif field == FILED_MAP['FILED_NORTH']:
