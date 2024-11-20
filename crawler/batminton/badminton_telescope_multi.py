@@ -21,15 +21,6 @@ urllib3.disable_warnings()
 
 # A区 10-12,17-19
 
-target_list = {
-    "date": [],
-    # "date": ['2024-11-01'],
-    "match": ["19:00--20:00", "20:00--21:00"],
-    # "match": ["10:00--11:00", "11:00--12:00", "12:00--13:00", "13:00--14:00", "14:00--15:00", "15:00--16:00",
-    #           "16:00--17:00"]
-
-}
-
 FILED_MAP = {
     "FILED_OLYMPIC": "奥体中心",
     "FILED_SOUTH": "南部市民中心",
@@ -362,7 +353,6 @@ def cube_collect_info(collect_info: list, target: dict):
 
 
 def sort_cube_info(raw_cube_info: [], target: dict):
-    cube_info = []
     cube_map = {}
     for v_d in target['venue_detail']:
         for raw in raw_cube_info:
@@ -372,9 +362,6 @@ def sort_cube_info(raw_cube_info: [], target: dict):
                 cube_list = cube_map.get(match, [])
                 cube_list.append(raw)
                 cube_map.setdefault(match, cube_list)
-    # for match, cube_list in cube_map.items():
-    #     if len(cube_list) > 0:
-    #         cube_info.append(cube_list[0])
     return cube_map
 
 
