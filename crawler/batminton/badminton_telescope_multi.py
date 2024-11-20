@@ -2,6 +2,7 @@ import json
 import os
 import re
 import sys
+import threading
 import time
 import uuid
 from datetime import datetime, timedelta
@@ -50,64 +51,78 @@ _job = None
 
 DEFAULT_INTERVAL = 8
 
+# 创建一个线程列表
+threads = []
+
 
 def detect_sku(debug_mode: bool = False):
     global DEBUG_MODE
     DEBUG_MODE = debug_mode
     # 初始化 _config
     print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} begin---------------")
-    init()
     global _config
     if "user_infos" not in _config:
         print("user_infos in config is empty, return.")
         return
     for user_info in _config['user_infos']:
-        auth_token = user_info["auth_token"] if "auth_token" in user_info and user_info[
-            "auth_token"] != "" else "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTk4ODIxOSwiaWQiOiIxNzI5OTg4MjE5MDE1NzMiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.zzamXD2BJ0vdpkUbdtsXkTgP7DOsUX4chPTTWW8vVCg"
-        request_id = user_info["auth_code"] if "auth_code" in user_info and user_info[
-            "auth_code"] != "" else str(uuid.UUID)
-        account_id = user_info["account_id"] if "account_id" in user_info and user_info[
-            "account_id"] != "" else "UNKNOWN_ACCOUNT"
-        headers = {
-            'Host': 'api.wesais.com',
-            'Connection': 'keep-alive',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Accept': 'application/json, text/plain, */*',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x63090c0f)XWEB/11275',
-            'Authorization': auth_token,
-            'Origin': 'https://xcx.wesais.com',
-            'Sec-Fetch-Site': 'same-site',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Dest': 'empty',
-            'Referer': 'https://xcx.wesais.com/',
-            # 'Accept-Encoding': 'gzip, deflate, br',
-            'Accept-Language': 'zh-CN,zh;q=0.9',
-        }
-        global HEADERS
-        HEADERS = headers
-        # 替换
-        has_order = False
-        for target in _config['targetList']:
-            print(f"--------monitor target:{target}")
-            for time_date in target['date_detail']:
-                limit = target['limit']
-                limit_date = build_date(interval=limit)
-                if limit_date < target['date_detail'][0]:
-                    print(
-                        f"field:{target['field']},current date:{datetime.now().strftime('%Y-%m-%d')},limit_date:{limit_date},limit:{target['limit']}--->skip")
-                    break
-                print(f"current request date:{time_date}")
-                has_order = api_order_list(request_id=request_id, target=target)
-                if has_order:
-                    break
-                api_request(time_date=time_date, request_id=request_id, headers=headers, target=target)
-            if has_order:
-                break
+        # 创建线程
+        thread = threading.Thread(target=detect_sku_process, args=(user_info,))
+        # 将线程添加到线程列表
+        threads.append(thread)
+        # 启动线程
+        thread.start()
 
+    # 等待所有线程完成
+    for thread in threads:
+        thread.join()
     print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} end---------------")
 
 
-#     order create response---> {'code': 40004007, 'data': '', 'message': '提示:所选场地不支持在现阶段预订'}
+def detect_sku_process(user_info: dict):
+    auth_token = user_info["auth_token"] if "auth_token" in user_info and user_info[
+        "auth_token"] != "" else "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjdCI6MTcyOTk4ODIxOSwiaWQiOiIxNzI5OTg4MjE5MDE1NzMiLCJhaWQiOjEwMTAxLCJtaWQiOjQsInRpZCI6NSwicGFyYW1zIjoie1wiY29tcGFueV9pZFwiOjYxNSxcImFjY291bnRfdHlwZVwiOjMxLFwiYWNjb3VudF9pZFwiOjEwMDk2MTYsXCJtZW1iZXJfaWRcIjoxMTkyMjk4LFwic2FmZV9sXCI6MSxcInBlcnNvbm5lbF9pZFwiOjExOTIyOTh9In0.zzamXD2BJ0vdpkUbdtsXkTgP7DOsUX4chPTTWW8vVCg"
+    request_id = user_info["auth_code"] if "auth_code" in user_info and user_info[
+        "auth_code"] != "" else str(uuid.UUID)
+    account_id = user_info["account_id"] if "account_id" in user_info and user_info[
+        "account_id"] != "" else "UNKNOWN_ACCOUNT"
+    headers = {
+        'Host': 'api.wesais.com',
+        'Connection': 'keep-alive',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json, text/plain, */*',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36 MicroMessenger/7.0.20.1781(0x6700143B) NetType/WIFI MiniProgramEnv/Windows WindowsWechat/WMPF WindowsWechat(0x63090c0f)XWEB/11275',
+        'Authorization': auth_token,
+        'Origin': 'https://xcx.wesais.com',
+        'Sec-Fetch-Site': 'same-site',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Dest': 'empty',
+        'Referer': 'https://xcx.wesais.com/',
+        # 'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'zh-CN,zh;q=0.9',
+    }
+    global HEADERS
+    HEADERS = headers
+    # 替换
+    has_order = False
+    for target in _config['targetList']:
+        print(f"{threading.current_thread().name}--------monitor target:{target}")
+        for time_date in target['date_detail']:
+            limit = target['limit']
+            limit_date = build_date(interval=limit)
+            if limit_date < target['date_detail'][0]:
+                print(
+                    f"field:{target['field']},current date:{datetime.now().strftime('%Y-%m-%d')},limit_date:{limit_date},limit:{target['limit']}--->skip")
+                break
+            print(f"current request date:{time_date}")
+            has_order = api_order_list(request_id=request_id, target=target)
+            if has_order:
+                print("当前有未支付的订单，提前退出。")
+                break
+            api_request(time_date=time_date, request_id=request_id, headers=headers, target=target)
+        if has_order:
+            break
+
+
 def api_request(time_date: str, request_id: str, headers: dict, target: dict):
     business_id, stadium_id, group_id, field, duration = target['business_id'], target['stadium_id'], target[
         'group_id'], target[
@@ -119,7 +134,7 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
         'time_date': time_date,
         'request_id': request_id,  # 待替换
     }
-    print(f"detect time_date:{time_date}")
+    print(f"{threading.current_thread().name} detect time_date:{time_date}")
     response = requests.post('https://api.wesais.com/field/wxFieldBuyPlan/getList', headers=headers, data=data,
                              verify=False)
     result = response.json()
@@ -134,41 +149,80 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
         dig_sku_list(collect_info, result, time_date)
     except Exception as ex:
         print(f"detect_sku--->{ex}")
-    cube_info = cube_collect_info(collect_info=collect_info, target=target)
-    print("----cube_info:", cube_info)
-    if cube_info is not None and len(cube_info) > 0:
+    # print(f"{threading.current_thread().name}----collect_info:{collect_info}")
+    cube_map = cube_collect_info(collect_info=collect_info, target=target)
+    print(f"{threading.current_thread().name}----cube_map:{cube_map}")
+    if cube_map is not None and len(cube_map) > 0:
         content = """
         ### **%s**
         """ % field
         if DEBUG_MODE is None or not DEBUG_MODE:
             # 提交订单，订单只有8分钟的支付时间
-            sku_body = build_sku_slice(get_random_sku_slice(collect_info=cube_info, duration=duration),
-                                       duration=duration)
-            print(f"sku_body->{sku_body}")
-            if sku_body and sku_body != "":
-                data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
-                print("data->", data)
-                response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data,
-                                         verify=False)
-                print("order create response--->", response.json())
-            else:
-                print("==========================没有可选的场次,无法提交预定订单")
+            # candidates = get_random_sku_slice(cube_map=cube_map, duration=duration)
+            i = 0
+            # for match, cube_list in cube_map.items():
+            if len(cube_map) < duration:
+                print(f"当前的场地时段数量小于时长->{duration}")
                 return
-        for item in cube_info:
-            v = item.split(split_symbol)
-            content += create_warn_content(field=v[0], match=v[1], field_status=v[2])
-        if content and content != "":
-            send_weixin(content)
-            today = datetime.now().strftime('%Y-%m-%d')
-            if today not in warning_info:
-                warning_info[today] = 0
-            warning_info[today] += 1
-            print(f"warning_info:{warning_info}")
-            if warning_info[today] >= 1:
-                if DEBUG_MODE is None or not DEBUG_MODE:
-                    print("=======================恭喜你，去我的订单付款吧=======================")
-                print("warning_info has already send 1 times,quit")
+            first_item_len = 0
+            for match, item in cube_map.items():
+                first_item_len = len(cube_map[match])
+                break
+            push_msg = True
+            candidates = []
+            msgs = []
+            for j in range(0, first_item_len):
+                candidates.clear()
+                msgs.clear()
+                for match, item in cube_map.items():
+                    candidates.append(cube_map[match][j].split(split_symbol)[-1])
+                    msgs.append(cube_map[match][j])
+                if len(candidates) < duration:
+                    print(f"当前的场地时段数量小于时长->{duration}")
+                    return
+                print(f"{threading.current_thread().name}----candidates:{candidates}")
+                sku_body = build_sku_slice(candidates=candidates, duration=duration)
+                print(f"sku_body->{sku_body}")
+                if sku_body and sku_body != "":
+                    data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
+                    print("data->", data)
+                    response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data,
+                                             verify=False)
+                    order_result = response.json()
+
+                    print("order create response--->", order_result)
+                    if "code" in order_result and order_result['code'] == 40004007:
+                        if "message" in order_result and "提示" in order_result['message']:
+                            print(f"{order_result}")
+                            if "被其他人占用" in order_result['message'] or "不能再次预订" in order_result['message']:
+                                j += 1
+                                continue
+                            else:
+                                push_msg = False
+                                break
+                #     order create response---> {'code': 40004007, 'data': '', 'message': '提示:场地已被其他人占用'}
+                #     order create response---> {'code': 40004007, 'data': '', 'message': '提示:所选场地不支持在现阶段预订'}
+                #     order create response---> {'code': 40004007, 'data': '', 'message': '提示:订场操作频繁'}
+                else:
+                    print("==========================没有可选的场次,无法提交预定订单")
+                    return
+            if not push_msg:
                 return
+            for item in msgs:
+                v = item.split(split_symbol)
+                content += create_warn_content(field=v[0], match=v[1], field_status=v[2])
+            if content and content != "":
+                send_weixin(content)
+                today = datetime.now().strftime('%Y-%m-%d')
+                if today not in warning_info:
+                    warning_info[today] = 0
+                warning_info[today] += 1
+                print(f"warning_info:{warning_info}")
+                if warning_info[today] >= 1:
+                    if DEBUG_MODE is None or not DEBUG_MODE:
+                        print("=======================恭喜你，去我的订单付款吧=======================")
+                    print("warning_info has already send 1 times,quit")
+                    return
 
 
 def api_order_list(request_id: str, target: dict):
@@ -237,11 +291,17 @@ def refresh_job():
     if _scheduler and _job:
         next_interval = _config['trigger']['interval'] if _config and 'trigger' in _config and 'interval' in _config[
             'trigger'] else DEFAULT_INTERVAL
-        next_run_time = datetime.now() + timedelta(minutes=next_interval)
+        unit = _config['trigger']['unit'] if _config and 'trigger' in _config and 'unit' in _config[
+            'trigger'] else None
+        if unit and unit.lower() and unit.lower() == "s":
+            next_run_time = datetime.now() + timedelta(seconds=next_interval)
+            _job = _scheduler.reschedule_job(_job.id, trigger=IntervalTrigger(seconds=next_interval))
+        else:
+            next_run_time = datetime.now() + timedelta(minutes=next_interval)
+            _job = _scheduler.reschedule_job(_job.id, trigger=IntervalTrigger(minutes=next_interval))
         # 更新下一次执行时间
         print(
             f"reschedule_job job_id:{_job.id}---->next_run_time:{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}->next_interval:{next_interval}")
-        _job = _scheduler.reschedule_job(_job.id, trigger=IntervalTrigger(minutes=next_interval))
 
 
 # warnContent = bytes(warnContent, 'utf-8').decode('unicode_escape')
@@ -280,17 +340,13 @@ def build_sku_slice(candidates: list, duration: int = 2):
     return sku_slice
 
 
-def get_random_sku_slice(collect_info: list, duration: int = 2):
-    if collect_info and len(collect_info) <= 1:
+def get_random_sku_slice(cube_map: dict, duration: int = 2):
+    if cube_map and len(cube_map) <= 1:
         print("==========================当前的场次不够，无法支付")
         return []
     candidates = []
-    for item in collect_info:
+    for item in cube_map:
         candidates.append(item.split(split_symbol)[-1])
-        global _config
-        if len(candidates) == duration:
-            print("candidates->", candidates)
-            return candidates
     return candidates
 
 
@@ -316,10 +372,10 @@ def sort_cube_info(raw_cube_info: [], target: dict):
                 cube_list = cube_map.get(match, [])
                 cube_list.append(raw)
                 cube_map.setdefault(match, cube_list)
-    for match, cube_list in cube_map.items():
-        if len(cube_list) > 0:
-            cube_info.append(cube_list[0])
-    return cube_info
+    # for match, cube_list in cube_map.items():
+    #     if len(cube_list) > 0:
+    #         cube_info.append(cube_list[0])
+    return cube_map
 
 
 def parse_config():
@@ -334,8 +390,12 @@ def parse_config():
     with open(config_path, 'r', encoding='utf-8') as file:
         # 读取文件内容
         content = file.read()
-    global _config
-    _config = json.loads(content)
+    try:
+        global _config
+        _config = json.loads(content)
+    except Exception as ex:
+        print(f"解析的config.json文件可能存在错误,请检查。{ex}")
+        return
     print("before _config:", _config)
     user_infos = fill_user_infos(directory)
     _config['user_infos'] = user_infos
@@ -425,7 +485,7 @@ def get_request_id(request_body: str):
 
 def get_limit_days(field: str):
     if field == FILED_MAP['FILED_OLYMPIC']:
-        return 6
+        return 9
     elif field == FILED_MAP['FILED_SOUTH']:
         return 2
     elif field == FILED_MAP['FILED_NORTH']:
@@ -464,8 +524,8 @@ def get_beijing_time(sync_time=True):
         # 解析JSON响应
         data = response.json()
         # 获取当前时间并转换为datetime对象
-        beijing_time = datetime.fromisoformat(data['datetime'])
-        print('sync time beijing time:', beijing_time.strftime('%Y-%m-%d %H:%M:%S'))
+        beijing_time = datetime.fromisoformat(data['datetime']).strftime('%Y-%m-%d %H:%M:%S')
+        print('sync time beijing time:', beijing_time)
         return beijing_time
     else:
         print('Failed to get time:', response.status_code)
