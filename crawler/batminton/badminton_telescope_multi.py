@@ -50,6 +50,7 @@ def detect_sku(debug_mode: bool = False):
     global DEBUG_MODE
     DEBUG_MODE = debug_mode
     # 初始化 _config
+    init()
     print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} begin---------------")
     global _config
     if "user_infos" not in _config:
@@ -133,7 +134,7 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
     if "code" not in result or result['code'] != 200:
         print(f"B---result--->{result}")
         # B---result--->{'code': 40101, 'data': None, 'message': '请重新登陆'}
-        print(f"==========================:message:{result['message']},code:{result['code']}")
+        print(f"{threading.current_thread().name}:==========================:message:{result['message']},code:{result['code']}")
         return
     collect_info = []
     try:
@@ -149,7 +150,7 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
         """ % field
         # 提交订单，订单只有8分钟的支付时间
         if len(cube_map) < duration:
-            print(f"当前的场地时段数量小于时长->{duration}")
+            print(f"{threading.current_thread().name}:当前的场地时段数量小于时长->{duration}")
             return
         first_item_len = 0
         for match, item in cube_map.items():
@@ -165,15 +166,15 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
                 candidates.append(cube_map[match][j].split(split_symbol)[-1])
                 msgs.append(cube_map[match][j])
             if len(candidates) < duration:
-                print(f"当前的场地时段数量小于时长->{duration}")
+                print(f"{threading.current_thread().name}:当前的场地时段数量小于时长->{duration}")
                 return
-            print(f"{threading.current_thread().name}----candidates:{candidates}")
+            print(f"{threading.current_thread().name}:candidates:{candidates}")
             sku_body = build_sku_slice(candidates=candidates, duration=duration)
-            print(f"sku_body->{sku_body}")
+            print(f"{threading.current_thread().name}:sku_body->{sku_body}")
             if DEBUG_MODE is None or not DEBUG_MODE:
                 if sku_body and sku_body != "":
                     data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
-                    print("data->", data)
+                    print(f"{threading.current_thread().name}:data->", data)
                     response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data,
                                              verify=False)
                     order_result = response.json()
@@ -181,9 +182,10 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
                     print(f"{threading.current_thread().name}---order create response--->{order_result}")
                     if "code" in order_result and order_result['code'] == 40004007:
                         if "message" in order_result and "提示" in order_result['message']:
-                            print(f"{order_result}")
+                            print(f"{threading.current_thread().name}:{order_result}")
                             if "被其他人占用" in order_result['message'] or "不能再次预订" in order_result[
-                                'message'] or "订场操作频繁" in order_result['message']:
+                                'message'] or "订场操作频繁" in order_result['message'] or "预定" in order_result[
+                                'message']:
                                 j += 1
                                 continue
                             else:
@@ -193,7 +195,8 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
                 #     order create response---> {'code': 40004007, 'data': '', 'message': '提示:所选场地不支持在现阶段预订'}
                 #     order create response---> {'code': 40004007, 'data': '', 'message': '提示:订场操作频繁'}
                 else:
-                    print("==========================没有可选的场次,无法提交预定订单")
+                    print(
+                        f"{threading.current_thread().name}:==========================没有可选的场次,无法提交预定订单")
                     return
         if not push_msg:
             return
@@ -206,12 +209,12 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
             if today not in warning_info:
                 warning_info[today] = 0
             warning_info[today] += 1
-            print(f"warning_info:{warning_info}")
+            print(f"{threading.current_thread().name}:warning_info:{warning_info}")
             if warning_info[today] >= 1:
                 if DEBUG_MODE is None or not DEBUG_MODE:
                     print(
                         f"{threading.current_thread().name}=======================恭喜你，去我的订单付款吧=======================")
-                print("warning_info has already send 1 times,quit")
+                print(f"{threading.current_thread().name}:warning_info has already send 1 times,quit")
                 return
 
 
@@ -236,10 +239,11 @@ def api_order_list(request_id: str, target: dict):
                 first_order = result['data']['list'][0]
                 if ("order_status_str" in first_order and first_order["order_status_str"] == "未支付") or (
                         "order_status" in first_order and first_order['order_status'] == 0):
-                    print("=======================我的订单有未支付订单，去支付，付款时间只有8分钟")
+                    print(
+                        f"{threading.current_thread().name}:=======================我的订单有未支付订单，去支付，付款时间只有8分钟")
                     return True
     except Exception as ex:
-        print(f"api_order_list exception--->{ex}")
+        print(f"{threading.current_thread().name}:api_order_list exception--->{ex}")
     return False
 
 
@@ -333,7 +337,7 @@ def build_sku_slice(candidates: list, duration: int = 2):
 
 def get_random_sku_slice(cube_map: dict, duration: int = 2):
     if cube_map and len(cube_map) <= 1:
-        print("==========================当前的场次不够，无法支付")
+        print(f"{threading.current_thread().name}:==========================当前的场次不够，无法支付")
         return []
     candidates = []
     for item in cube_map:
@@ -344,7 +348,6 @@ def get_random_sku_slice(cube_map: dict, duration: int = 2):
 def cube_collect_info(collect_info: list, target: dict):
     raw_cube_info = []
     venue_detail = target['venue_detail']
-    # court = item['court']
     for candidate in collect_info:
         arr = candidate.split(split_symbol)
         if arr[0].split("_")[1] in venue_detail:
@@ -412,12 +415,12 @@ def parse_config():
             this_monday = today
         else:
             this_monday = today - timedelta(days=weekday)
-        print("This Monday's date:", this_monday.strftime("%Y-%m-%d"))
+        print(f"{threading.current_thread().name}:This Monday's date:", this_monday.strftime("%Y-%m-%d"))
         for offset in item['offset']:
             for week in item['week']:
                 next_date = this_monday + timedelta(days=week - 1 + offset * 7)
                 date_detail.append(next_date.strftime("%Y-%m-%d"))
-                print(next_date.strftime("%Y-%m-%d"))
+                print(f"{threading.current_thread().name}:",next_date.strftime("%Y-%m-%d"))
         item['date_detail'] = date_detail
     print("after _config:", _config)
 
@@ -556,13 +559,13 @@ def start_job_core(run_date=None, debug_mode=False, sync_time=False):
     global _job
     if run_date is None:
         _job = _scheduler.add_job(detect_sku, 'interval', seconds=_init_next_interval, next_run_time=datetime.now(),
-                                  args=(debug_mode,))
+                                  args=(debug_mode,), max_instances=5)
         print(
             f"[interval mode] add_job job_id:{_job.id}---->next_run_time:{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
     else:
         today = datetime.now().strftime('%Y-%m-%d')
         actual_run_date = "%s %s" % (today, run_date)
-        _job = _scheduler.add_job(detect_sku, 'date', run_date=actual_run_date, args=(debug_mode,))
+        _job = _scheduler.add_job(detect_sku, 'date', run_date=actual_run_date, args=(debug_mode,), max_instances=5)
         print(f"[date mode]add_job job_id:{_job.id}---->next_run_time:{actual_run_date}")
     # 启动调度器
     _scheduler.start()
