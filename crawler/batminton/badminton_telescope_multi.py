@@ -51,10 +51,11 @@ def detect_sku(debug_mode: bool = False):
     DEBUG_MODE = debug_mode
     # 初始化 _config
     init()
-    print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} begin---------------")
+    write_log(
+        log_context=f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} begin---------------")
     global _config
     if "user_infos" not in _config:
-        print("user_infos in config is empty, return.")
+        write_log(log_context="user_infos in config is empty, return.")
         return
     for user_info in _config['user_infos']:
         # 创建线程
@@ -67,7 +68,8 @@ def detect_sku(debug_mode: bool = False):
     # 等待所有线程完成
     for thread in threads:
         thread.join()
-    print(f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} end---------------")
+    write_log(
+        log_context=f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} end---------------")
 
 
 def detect_sku_process(user_info: dict):
@@ -97,18 +99,18 @@ def detect_sku_process(user_info: dict):
     # 替换
     has_order = False
     for target in _config['targetList']:
-        print(f"{threading.current_thread().name}--------monitor target:{target}")
+        write_log(log_context=f"{threading.current_thread().name}--------monitor target:{target}")
         for time_date in target['date_detail']:
             limit = target['limit']
             limit_date = build_date(interval=limit)
             if limit_date < target['date_detail'][0]:
-                print(
-                    f"field:{target['field']},current date:{datetime.now().strftime('%Y-%m-%d')},limit_date:{limit_date},limit:{target['limit']}--->skip")
+                write_log(log_context=
+                          f"field:{target['field']},current date:{datetime.now().strftime('%Y-%m-%d')},limit_date:{limit_date},limit:{target['limit']}--->skip")
                 break
-            print(f"current request date:{time_date}")
+            write_log(log_context=f"current request date:{time_date}")
             has_order = api_order_list(request_id=request_id, target=target)
             if has_order:
-                print("当前有未支付的订单，提前退出。")
+                write_log(log_context="当前有未支付的订单，提前退出。")
                 break
             api_request(time_date=time_date, request_id=request_id, headers=headers, target=target)
         if has_order:
@@ -126,31 +128,35 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
         'time_date': time_date,
         'request_id': request_id,  # 待替换
     }
-    print(f"{threading.current_thread().name} detect time_date:{time_date}")
+    write_log(log_context=f"{threading.current_thread().name} detect time_date:{time_date}")
     response = requests.post('https://api.wesais.com/field/wxFieldBuyPlan/getList', headers=headers, data=data,
                              verify=False)
     result = response.json()
-    # print(f"A---result--->{result}")
+    # write_log(log_context=f"A---result--->{result}")
     if "code" not in result or result['code'] != 200:
-        print(f"B---result--->{result}")
+        write_log(log_context=f"{threading.current_thread().name}----B---result--->{result}")
         # B---result--->{'code': 40101, 'data': None, 'message': '请重新登陆'}
-        print(f"{threading.current_thread().name}:==========================:message:{result['message']},code:{result['code']}")
+        # ----B---result--->{'code': 40101, 'data': None, 'message': '授权令牌不存，请重新登陆'}
+        # ---B---result--->{'code': 40108, 'data': None, 'message': '^_^ 您的动作太快了，请休息一下 ☕️ '}
+        write_log(log_context=
+                  f"{threading.current_thread().name}:==========================:message:{result['message']},code:{result['code']}")
+        write_log(log_context=f"{threading.current_thread().name}:刷新小程序的令牌")
         return
     collect_info = []
     try:
         dig_sku_list(collect_info, result, time_date)
     except Exception as ex:
-        print(f"detect_sku--->{ex}")
-    # print(f"{threading.current_thread().name}----collect_info:{collect_info}")
+        write_log(log_context=f"detect_sku--->{ex}")
+    # write_log(log_context=f"{threading.current_thread().name}----collect_info:{collect_info}")
     cube_map = cube_collect_info(collect_info=collect_info, target=target)
-    print(f"{threading.current_thread().name}----cube_map:{cube_map}")
+    write_log(log_context=f"{threading.current_thread().name}----cube_map:{cube_map}")
     if cube_map is not None and len(cube_map) > 0:
         content = """
         ### **%s**
         """ % field
         # 提交订单，订单只有8分钟的支付时间
         if len(cube_map) < duration:
-            print(f"{threading.current_thread().name}:当前的场地时段数量小于时长->{duration}")
+            write_log(log_context=f"{threading.current_thread().name}:当前的场地时段数量小于时长->{duration}")
             return
         first_item_len = 0
         for match, item in cube_map.items():
@@ -166,27 +172,29 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
                 candidates.append(cube_map[match][j].split(split_symbol)[-1])
                 msgs.append(cube_map[match][j])
             if len(candidates) < duration:
-                print(f"{threading.current_thread().name}:当前的场地时段数量小于时长->{duration}")
+                write_log(log_context=f"{threading.current_thread().name}:当前的场地时段数量小于时长->{duration}")
                 return
-            print(f"{threading.current_thread().name}:candidates:{candidates}")
+            write_log(log_context=f"{threading.current_thread().name}:candidates:{candidates}")
             sku_body = build_sku_slice(candidates=candidates, duration=duration)
-            print(f"{threading.current_thread().name}:sku_body->{sku_body}")
+            write_log(log_context=f"{threading.current_thread().name}:sku_body->{sku_body}")
             if DEBUG_MODE is None or not DEBUG_MODE:
                 if sku_body and sku_body != "":
                     data = f"business_id={business_id}&stadium_id={stadium_id}&sys_id=13&sku_slice={sku_body}&business_type=1301&order_from=2&handle_info=%7B%22date_str%22%3A%22%22%7D&sales_id=0&request_id={request_id}"
-                    print(f"{threading.current_thread().name}:data->", data)
+                    write_log(log_context=f"{threading.current_thread().name}:data->{data}")
                     response = requests.post('https://api.wesais.com/shop/order/create', headers=headers, data=data,
                                              verify=False)
                     order_result = response.json()
 
-                    print(f"{threading.current_thread().name}---order create response--->{order_result}")
+                    write_log(
+                        log_context=f"{threading.current_thread().name}---order create response--->{order_result}")
                     if "code" in order_result and order_result['code'] == 40004007:
                         if "message" in order_result and "提示" in order_result['message']:
-                            print(f"{threading.current_thread().name}:{order_result}")
+                            write_log(log_context=f"{threading.current_thread().name}:{order_result}")
                             if "被其他人占用" in order_result['message'] or "不能再次预订" in order_result[
-                                'message'] or "订场操作频繁" in order_result['message'] or "预定" in order_result[
-                                'message']:
+                                'message'] or "预定" in order_result['message']:
                                 j += 1
+                                continue
+                            elif "订场操作频繁" in order_result['message']:
                                 continue
                             else:
                                 push_msg = False
@@ -195,8 +203,8 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
                 #     order create response---> {'code': 40004007, 'data': '', 'message': '提示:所选场地不支持在现阶段预订'}
                 #     order create response---> {'code': 40004007, 'data': '', 'message': '提示:订场操作频繁'}
                 else:
-                    print(
-                        f"{threading.current_thread().name}:==========================没有可选的场次,无法提交预定订单")
+                    write_log(log_context=
+                              f"{threading.current_thread().name}:==========================没有可选的场次,无法提交预定订单")
                     return
         if not push_msg:
             return
@@ -209,12 +217,12 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
             if today not in warning_info:
                 warning_info[today] = 0
             warning_info[today] += 1
-            print(f"{threading.current_thread().name}:warning_info:{warning_info}")
+            write_log(log_context=f"{threading.current_thread().name}:warning_info:{warning_info}")
             if warning_info[today] >= 1:
                 if DEBUG_MODE is None or not DEBUG_MODE:
-                    print(
-                        f"{threading.current_thread().name}=======================恭喜你，去我的订单付款吧=======================")
-                print(f"{threading.current_thread().name}:warning_info has already send 1 times,quit")
+                    write_log(log_context=
+                              f"{threading.current_thread().name}=======================恭喜你，去我的订单付款吧=======================")
+                write_log(log_context=f"{threading.current_thread().name}:warning_info has already send 1 times,quit")
                 return
 
 
@@ -233,17 +241,17 @@ def api_order_list(request_id: str, target: dict):
     try:
         response = requests.post('https://api.wesais.com/shop/order/list', headers=HEADERS, data=data, verify=False)
         result = response.json()
-        # print("order list response--->", result)
+        # write_log(log_context="order list response--->", result)
         if "code" in result and result['code'] == 200:
             if len(result['data']['list']) > 0:
                 first_order = result['data']['list'][0]
                 if ("order_status_str" in first_order and first_order["order_status_str"] == "未支付") or (
                         "order_status" in first_order and first_order['order_status'] == 0):
-                    print(
-                        f"{threading.current_thread().name}:=======================我的订单有未支付订单，去支付，付款时间只有8分钟")
+                    write_log(log_context=
+                              f"{threading.current_thread().name}:=======================我的订单有未支付订单，去支付，付款时间只有8分钟")
                     return True
     except Exception as ex:
-        print(f"{threading.current_thread().name}:api_order_list exception--->{ex}")
+        write_log(log_context=f"{threading.current_thread().name}:api_order_list exception--->{ex}")
     return False
 
 
@@ -262,7 +270,7 @@ def dig_sku_list(collect_info, result, time_date):
                                         'time_str'] + split_symbol + (
                                         "已定" if s[
                                             'is_lock'] else "空闲") + split_symbol + s['sku'])
-                            # print(s['sku_name'].replace(" ", "") + "场次:" + time_date + " " + s['time_str'] + (
+                            # write_log(log_context=s['sku_name'].replace(" ", "") + "场次:" + time_date + " " + s['time_str'] + (
                             #     "已定" if s['is_lock'] else "空闲"))
 
 
@@ -294,8 +302,8 @@ def refresh_job():
             next_run_time = datetime.now() + timedelta(minutes=next_interval)
             _job = _scheduler.reschedule_job(_job.id, trigger=IntervalTrigger(minutes=next_interval))
         # 更新下一次执行时间
-        print(
-            f"reschedule_job job_id:{_job.id}---->next_run_time:{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}->next_interval:{next_interval}")
+        write_log(log_context=
+                  f"reschedule_job job_id:{_job.id}---->next_run_time:{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}->next_interval:{next_interval}")
 
 
 # warnContent = bytes(warnContent, 'utf-8').decode('unicode_escape')
@@ -331,13 +339,13 @@ def build_sku_slice(candidates: list, duration: int = 2):
         sku_slice += candidates[i] + "%3A1"
         if i != end - 1:
             sku_slice += "%2C"
-    print("sku_slice:", sku_slice)
+    write_log(log_context=f"sku_slice:{sku_slice}")
     return sku_slice
 
 
 def get_random_sku_slice(cube_map: dict, duration: int = 2):
     if cube_map and len(cube_map) <= 1:
-        print(f"{threading.current_thread().name}:==========================当前的场次不够，无法支付")
+        write_log(log_context=f"{threading.current_thread().name}:==========================当前的场次不够，无法支付")
         return []
     candidates = []
     for item in cube_map:
@@ -370,12 +378,12 @@ def sort_cube_info(raw_cube_info: [], target: dict):
 
 def parse_config():
     if len(sys.argv) < 2:
-        print("using default config path...")
+        write_log(log_context="using default config path...")
         config_path = r"D:\Dev\Data\input\badminton\config.json"
     else:
         config_path = sys.argv[1]
     # 打印所有参数
-    print("config path:", config_path)
+    write_log(log_context=f"config path:{config_path}")
     directory = os.path.dirname(config_path)
     with open(config_path, 'r', encoding='utf-8') as file:
         # 读取文件内容
@@ -384,9 +392,9 @@ def parse_config():
         global _config
         _config = json.loads(content)
     except Exception as ex:
-        print(f"解析的config.json文件可能存在错误,请检查。{ex}")
+        write_log(log_context=f"解析的config.json文件可能存在错误,请检查。{ex}")
         return
-    print("before _config:", _config)
+    write_log(log_context=f"before _config:{_config}")
     user_infos = fill_user_infos(directory)
     _config['user_infos'] = user_infos
     # _config['trigger']['interval'] if _config and 'trigger' in _config and 'interval' in _config[
@@ -397,8 +405,9 @@ def parse_config():
         item['business_id'] = business_id
         item['stadium_id'] = stadium_id
         item['group_id'] = group_id
-        limit = get_limit_days(field=field)
-        item['limit'] = limit
+        if "limit" not in item or item['limit'] is None:
+            limit = get_limit_days(field=field)
+            item['limit'] = limit
         _symbol = get_tail_symbol(field=field)
         _prefix = _symbol[1] if _symbol[2] == "PREFIX" else ""
         _suffix = _symbol[1] if _symbol[2] == "SUFFIX" else ""
@@ -415,14 +424,17 @@ def parse_config():
             this_monday = today
         else:
             this_monday = today - timedelta(days=weekday)
-        print(f"{threading.current_thread().name}:This Monday's date:", this_monday.strftime("%Y-%m-%d"))
+        this_monday_str = this_monday.strftime("%Y-%m-%d")
+        write_log(
+            log_context=f"{threading.current_thread().name}:This Monday's date:{this_monday_str}")
         for offset in item['offset']:
             for week in item['week']:
                 next_date = this_monday + timedelta(days=week - 1 + offset * 7)
                 date_detail.append(next_date.strftime("%Y-%m-%d"))
-                print(f"{threading.current_thread().name}:",next_date.strftime("%Y-%m-%d"))
+                next_date_str = next_date.strftime("%Y-%m-%d")
+                write_log(log_context=f"{threading.current_thread().name}:{next_date_str}")
         item['date_detail'] = date_detail
-    print("after _config:", _config)
+    write_log(log_context=f"after _config:{_config}")
 
 
 def fill_user_infos(directory: str):
@@ -432,11 +444,11 @@ def fill_user_infos(directory: str):
             if file_name.startswith("response_"):
                 response_file_path = os.path.join(dir_path, file_name)
                 # 处理文件
-                print(response_file_path)
+                write_log(log_context=response_file_path)
                 with open(response_file_path, 'r', encoding='utf-8') as file:
                     lines = file.readlines()
                 if not lines or len(lines) == 0:
-                    print(f"response.txt is empty,fill the file first.->{file_name}")
+                    write_log(log_context=f"response.txt is empty,fill the file first.->{file_name}")
                     continue
                 response_content = lines[-1] if lines else None
                 if response_content:
@@ -492,7 +504,7 @@ def get_auth_code(request_body: str):
         return auth_code
     else:
         randon_auth_code = str(uuid.UUID)
-        print(f"No auth_code found.->{randon_auth_code}")
+        write_log(log_context=f"No auth_code found.->{randon_auth_code}")
         return randon_auth_code
 
 
@@ -515,10 +527,10 @@ def get_beijing_time(sync_time=True):
         data = response.json()
         # 获取当前时间并转换为datetime对象
         beijing_time = datetime.fromisoformat(data['datetime']).strftime('%Y-%m-%d %H:%M:%S')
-        print('sync time beijing time:', beijing_time)
+        write_log(log_context=f'sync time beijing time:{beijing_time}')
         return beijing_time
     else:
-        print('Failed to get time:', response.status_code)
+        write_log(log_context=f'Failed to get time:{response.status_code}')
         return None
 
 
@@ -532,8 +544,28 @@ def get_tail_symbol(field: str):
     return "---", "#", "SUFFIX"
 
 
+def write_log(file_name: str = None, log_context: str = ""):
+    current_date = datetime.now().strftime("%Y%m%d")
+    full_name = file_name
+    if not file_name:
+        folder_path = "logs"
+        dir_path = "D:\\Dev\\Data\\input\\badminton\\" + folder_path + "\\"
+        # 检查文件夹是否存在，如果不存在则创建
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path, exist_ok=True)  # exist_ok=True 表示如果文件夹已存在不会抛出错误
+        file_name = f"{current_date}.txt"
+        full_name = dir_path + file_name
+    if not full_name:
+        print(f"{log_context}")
+        return
+    with open(file=full_name, mode='a', encoding='utf-8') as file:
+        print(f"{log_context}")
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        file.write(f"{now_str} {log_context}\n")
+
+
 def start_job(debug_mode=False):
-    print("start_job_core start")
+    write_log(log_context="start_job_core start")
     init()
     run_dates = _config['trigger']['run_dates'] if _config and 'trigger' in _config and 'run_dates' in _config[
         'trigger'] else []
@@ -548,8 +580,8 @@ def start_job(debug_mode=False):
 
 
 def start_job_core(run_date=None, debug_mode=False, sync_time=False):
-    print(
-        f"------------------timer:start:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}:sync_time:{get_beijing_time()}------------------")
+    write_log(log_context=
+              f"------------------timer:start:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}:sync_time:{get_beijing_time()}------------------")
     # 创建后台调度器
     global _scheduler
     _scheduler = BackgroundScheduler()
@@ -560,13 +592,13 @@ def start_job_core(run_date=None, debug_mode=False, sync_time=False):
     if run_date is None:
         _job = _scheduler.add_job(detect_sku, 'interval', seconds=_init_next_interval, next_run_time=datetime.now(),
                                   args=(debug_mode,), max_instances=5)
-        print(
-            f"[interval mode] add_job job_id:{_job.id}---->next_run_time:{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        write_log(log_context=
+                  f"[interval mode] add_job job_id:{_job.id}---->next_run_time:{next_run_time.strftime('%Y-%m-%d %H:%M:%S')}")
     else:
         today = datetime.now().strftime('%Y-%m-%d')
         actual_run_date = "%s %s" % (today, run_date)
         _job = _scheduler.add_job(detect_sku, 'date', run_date=actual_run_date, args=(debug_mode,), max_instances=5)
-        print(f"[date mode]add_job job_id:{_job.id}---->next_run_time:{actual_run_date}")
+        write_log(log_context=f"[date mode]add_job job_id:{_job.id}---->next_run_time:{actual_run_date}")
     # 启动调度器
     _scheduler.start()
 
