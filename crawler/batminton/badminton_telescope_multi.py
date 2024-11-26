@@ -135,8 +135,17 @@ def api_request(time_date: str, request_id: str, headers: dict, target: dict):
         'request_id': request_id,  # 待替换
     }
     write_log(log_context=f"{threading.current_thread().name} detect time_date:{time_date}")
-    response = requests.post('https://api.wesais.com/field/wxFieldBuyPlan/getList', headers=headers, data=data,
-                             verify=False)
+    response = None
+    try:
+        response = requests.post('https://api.wesais.com/field/wxFieldBuyPlan/getList', headers=headers, data=data,
+                                 verify=False, timeout=(2, 10))
+    except requests.exceptions.Timeout as to:
+        write_log(f"field/wxFieldBuyPlan/getList timeout:{to}")
+    except requests.exceptions.RequestException as e:
+        write_log(f"field/wxFieldBuyPlan/getList other:{e}")
+    if not response:
+        write_log("field/wxFieldBuyPlan/getList result is None")
+        return
     result = response.json()
     # write_log(log_context=f"A---result--->{result}")
     if "code" not in result or result['code'] != 200:
