@@ -47,29 +47,35 @@ threads = []
 
 
 def detect_sku(debug_mode: bool = False):
-    global DEBUG_MODE
-    DEBUG_MODE = debug_mode
-    # 初始化 _config
-    init()
-    write_log(
-        log_context=f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} begin---------------")
-    global _config
-    if "user_infos" not in _config:
-        write_log(log_context="user_infos in config is empty, return.")
-        return
-    for user_info in _config['user_infos']:
-        # 创建线程
-        thread = threading.Thread(target=detect_sku_process, args=(user_info,))
-        # 将线程添加到线程列表
-        threads.append(thread)
-        # 启动线程
-        thread.start()
+    try:
 
-    # 等待所有线程完成
-    for thread in threads:
-        thread.join()
-    write_log(
-        log_context=f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} end---------------")
+        global DEBUG_MODE
+        DEBUG_MODE = debug_mode
+        # 初始化 _config
+        init()
+        write_log(
+            log_context=f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} begin---------------")
+        global _config
+        if "user_infos" not in _config:
+            write_log(log_context="user_infos in config is empty, return.")
+            return
+        for user_info in _config['user_infos']:
+            # 创建线程
+            thread = threading.Thread(target=detect_sku_process, args=(user_info,))
+            # 将线程添加到线程列表
+            threads.append(thread)
+            # 启动线程
+            thread.start()
+
+        # 等待所有线程完成
+        for thread in threads:
+            thread.join()
+        write_log(
+            log_context=f"---------------attempt at:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} end---------------")
+    except Exception as ex:
+        write_log(log_context=f"{threading.current_thread().name} except:{ex}")
+    finally:
+        write_log(log_context=f"{threading.current_thread().name} finally.")
 
 
 def detect_sku_process(user_info: dict):
@@ -520,6 +526,8 @@ def get_basic_info(field: str):
 
 
 def get_beijing_time(sync_time=True):
+    if not sync_time:
+        return
     # 请求World Time API获取东八区（北京时间）的时间
     response = requests.get('http://worldtimeapi.org/api/timezone/Asia/Shanghai')
     if response.status_code == 200:
@@ -581,7 +589,7 @@ def start_job(debug_mode=False):
 
 def start_job_core(run_date=None, debug_mode=False, sync_time=False):
     write_log(log_context=
-              f"------------------timer:start:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}:sync_time:{get_beijing_time()}------------------")
+              f"------------------timer:start:{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}:sync_time:{get_beijing_time(sync_time)}------------------")
     # 创建后台调度器
     global _scheduler
     _scheduler = BackgroundScheduler()
@@ -617,6 +625,11 @@ def start_job_core(run_date=None, debug_mode=False, sync_time=False):
 # 每日预定时长不能大于2小时
 
 if __name__ == '__main__':
-    # start_job(debug_mode=True)
-    start_job(debug_mode=False)
-    # detect_sku(debug_mode=True)
+    try:
+        # start_job(debug_mode=True)
+        start_job(debug_mode=False)
+        # detect_sku(debug_mode=True)
+    except Exception as ex:
+        write_log(log_context=f"{threading.current_thread().name} outer ex:{ex}")
+    finally:
+        write_log(log_context=f"{threading.current_thread().name} outer finally.")
