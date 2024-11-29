@@ -630,6 +630,12 @@ def start_job_core(run_date=None, debug_mode=False, sync_time=False):
         _scheduler.shutdown()
 
 
+def test_capa():
+    # from pycapt import Captcher
+    # c = Captcher()
+    # res = c.recognize(r'C:\Users\wangzhou\Desktop\c1.jpg')
+    # print(res)
+    pass
 # B---result--->{'code': 40101, 'data': None, 'message': '请重新登陆'}
 # 每日预定时长不能大于2小时
 
