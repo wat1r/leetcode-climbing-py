@@ -1,0 +1,6 @@
+
+返回图片
+https://cap.dingxiang-inc.com/api/a?w=380&h=165&s=50&ak=279891a0684fe2dac839034aec7b59ff&c=674e5926VlR29p2ioq6AxkjFAyG45P82
+
+验证接口
+https://cap.dingxiang-inc.com/api/v2

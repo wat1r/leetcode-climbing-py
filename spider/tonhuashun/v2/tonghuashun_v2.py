@@ -24,7 +24,7 @@ headers = {
 #     "v": "A_iLrOkS6xJd0AeW2MESvy5Zya2PYV28vsQweDJpQTfnDZaT2nEsew7VAMiB"
 # }
 
-with open("./tonghuashun.js", 'r', encoding='utf-8') as f:
+with open("./tonghuashun_v2.js", 'r', encoding='utf-8') as f:
     hexin_js = f.read()
 
 cookie = execjs.compile(hexin_js).call("get_cookie")
