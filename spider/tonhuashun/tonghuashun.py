@@ -1,8 +1,9 @@
+import json
+
 import requests
 from lxml import etree
 from loguru import logger
 import execjs
-
 
 headers = {
     "Accept": "*/*",
@@ -28,10 +29,11 @@ with open("./tonghuashun.js", 'r', encoding='utf-8') as f:
     hexin_js = f.read()
 
 cookie = execjs.compile(hexin_js).call("get_cookie")
-logger.info("cookie:{}",cookie)
-cookies = {"v":cookie}
+logger.info("cookie:{}", cookie)
+cookies = {"v": cookie}
 url = "http://q.10jqka.com.cn/index/index/board/all/field/zdf/order/desc/page/1/ajax/1/"
 resp = requests.get(url, headers=headers, cookies=cookies)
+# json.dumps("xx", separators=(',', ':')) + ''  ==== JSON.stringify(res)
 
 # print(response.text)
 # print(response)
